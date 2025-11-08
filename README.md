@@ -2356,682 +2356,6 @@ val userService = new UserService()  // implicit параметры подста
 
 ---
 
-**7.10. Implicit Parameters (детальное рассмотрение)**
-
-**Определение и использование:**
-
-```scala
-// Объявление implicit value
-implicit val defaultTimeout: Int = 5000
-implicit val defaultRetries: Int = 3
-
-// Функция с implicit параметром
-def makeRequest(url: String)(implicit timeout: Int, retries: Int): Response = {
-  println(s"Request to $url with timeout=$timeout, retries=$retries")
-  // логика запроса
-  ???
-}
-
-// Вызов без явной передачи параметров
-makeRequest("http://api.example.com")
-// Компилятор автоматически найдет и подставит defaultTimeout и defaultRetries
-
-// Или явная передача, если нужно переопределить
-makeRequest("http://api.example.com")(10000, 5)
-```
-
-**Implicit в companion objects:**
-
-```scala
-case class ExecutionConfig(threads: Int, timeout: Int)
-
-object ExecutionConfig {
-  // Implicit значение в companion object
-  implicit val default: ExecutionConfig = ExecutionConfig(4, 5000)
-}
-
-def execute(task: Task)(implicit config: ExecutionConfig): Unit = {
-  println(s"Executing with ${config.threads} threads")
-  // выполнение задачи
-}
-
-// Компилятор найдет implicit в companion object
-execute(myTask)
-```
-
-**Множественные implicit параметры:**
-
-```scala
-// Можно иметь несколько implicit parameter lists
-def process[A](data: A)(implicit 
-  serializer: Serializer[A], 
-  validator: Validator[A],
-  logger: Logger
-): Result = {
-  logger.log(s"Processing data")
-  if (validator.isValid(data)) {
-    serializer.serialize(data)
-  } else {
-    throw new ValidationException()
-  }
-}
-
-// Все три implicit будут найдены автоматически
-implicit val intSerializer: Serializer[Int] = ???
-implicit val intValidator: Validator[Int] = ???
-implicit val consoleLogger: Logger = ???
-
-process(42)
-```
-
----
-
-**7.2. Implicit Resolution (Разрешение неявных значений)**
-
-**Как работает поиск implicit:**
-
-Когда компилятор встречает вызов функции с implicit параметром, он ищет подходящее implicit значение в определенном порядке:
-
-```scala
-def greet(name: String)(implicit greeting: String): String = 
-  s"$greeting, $name"
-
-// Компилятор ищет implicit val greeting: String
-```
-
-**Порядок поиска (приоритет от высшего к низшему):**
-
-1. **Локальный scope или наследованный**
-2. **Explicit imports**
-3. **Wildcard imports**
-4. **Companion objects** связанных типов
-
-```scala
-// 1. ЛОКАЛЬНЫЙ SCOPE - наивысший приоритет
-def example1(): Unit = {
-  implicit val localGreeting: String = "Hi"  // Локальный scope
-  
-  def greet(name: String)(implicit greeting: String) = s"$greeting, $name"
-  
-  println(greet("Alice"))  // "Hi, Alice"
-}
-
-// 2. НАСЛЕДОВАННЫЙ SCOPE
-class Base {
-  implicit val baseGreeting: String = "Hello"
-}
-
-class Derived extends Base {
-  def greet(name: String)(implicit greeting: String) = s"$greeting, $name"
-  
-  def test(): Unit = {
-    println(greet("Bob"))  // "Hello, Bob" - найден в родительском классе
-  }
-}
-
-// 3. EXPLICIT IMPORTS
-object Implicits {
-  implicit val greetingFromObject: String = "Greetings"
-}
-
-def example2(): Unit = {
-  import Implicits.greetingFromObject  // Явный import
-  
-  def greet(name: String)(implicit greeting: String) = s"$greeting, $name"
-  println(greet("Charlie"))  // "Greetings, Charlie"
-}
-
-// 4. WILDCARD IMPORTS
-object MoreImplicits {
-  implicit val anotherGreeting: String = "Welcome"
-}
-
-def example3(): Unit = {
-  import MoreImplicits._  // Wildcard import
-  
-  def greet(name: String)(implicit greeting: String) = s"$greeting, $name"
-  println(greet("David"))  // "Welcome, David"
-}
-
-// 5. COMPANION OBJECT - самый низкий приоритет
-case class Greeting(text: String)
-
-object Greeting {
-  implicit val default: Greeting = Greeting("Hey")
-}
-
-def greet(name: String)(implicit greeting: Greeting): String = 
-  s"${greeting.text}, $name"
-
-// Компилятор найдет implicit в companion object Greeting
-println(greet("Eve"))  // "Hey, Eve"
-```
-
-**Детальные правила поиска:**
-
-```scala
-// Компилятор ищет implicit в companion objects:
-// 1. Companion object типа параметра
-// 2. Companion object типа результата
-// 3. Companion objects в цепочке наследования
-
-trait Serializer[A] {
-  def serialize(a: A): String
-}
-
-case class User(name: String)
-
-object User {
-  // Companion object типа User
-  implicit val userSerializer: Serializer[User] = new Serializer[User] {
-    def serialize(u: User): String = s"User(${u.name})"
-  }
-}
-
-object Serializer {
-  // Companion object типа Serializer
-  implicit val intSerializer: Serializer[Int] = new Serializer[Int] {
-    def serialize(i: Int): String = i.toString
-  }
-}
-
-def toJson[A](value: A)(implicit serializer: Serializer[A]): String = 
-  serializer.serialize(value)
-
-// Оба implicit будут найдены автоматически:
-toJson(User("Alice"))  // найден в companion object User
-toJson(42)             // найден в companion object Serializer
-```
-
----
-
-**7.3. Implicit Resolution для Generic Types**
-
-**Поиск implicit для параметризованных типов:**
-
-```scala
-trait Show[A] {
-  def show(a: A): String
-}
-
-object Show {
-  // Implicit для базовых типов
-  implicit val intShow: Show[Int] = (i: Int) => s"Int($i)"
-  implicit val stringShow: Show[String] = (s: String) => s"String($s)"
-  
-  // Implicit для Option - рекурсивный поиск
-  implicit def optionShow[A](implicit showA: Show[A]): Show[Option[A]] = 
-    new Show[Option[A]] {
-      def show(opt: Option[A]): String = opt match {
-        case Some(a) => s"Some(${showA.show(a)})"
-        case None => "None"
-      }
-    }
-  
-  // Implicit для List - рекурсивный поиск
-  implicit def listShow[A](implicit showA: Show[A]): Show[List[A]] = 
-    new Show[List[A]] {
-      def show(list: List[A]): String = 
-        list.map(showA.show).mkString("List(", ", ", ")")
-    }
-}
-
-def print[A](value: A)(implicit show: Show[A]): Unit = 
-  println(show.show(value))
-
-// Компилятор рекурсивно находит implicit:
-print(42)                        // Show[Int]
-print("hello")                   // Show[String]
-print(Some(42))                  // Show[Option[Int]] требует Show[Int]
-print(List(1, 2, 3))            // Show[List[Int]] требует Show[Int]
-print(Some(List(1, 2, 3)))      // Show[Option[List[Int]]] требует Show[List[Int]] и Show[Int]
-```
-
-**Implicit resolution для вложенных типов:**
-
-```scala
-trait Codec[A] {
-  def encode(a: A): String
-  def decode(s: String): A
-}
-
-object Codec {
-  implicit val intCodec: Codec[Int] = new Codec[Int] {
-    def encode(i: Int): String = i.toString
-    def decode(s: String): Int = s.toInt
-  }
-  
-  implicit def pairCodec[A, B](
-    implicit ca: Codec[A], cb: Codec[B]
-  ): Codec[(A, B)] = new Codec[(A, B)] {
-    def encode(pair: (A, B)): String = 
-      s"${ca.encode(pair._1)},${cb.encode(pair._2)}"
-    def decode(s: String): (A, B) = {
-      val parts = s.split(",")
-      (ca.decode(parts(0)), cb.decode(parts(1)))
-    }
-  }
-  
-  implicit def mapCodec[K, V](
-    implicit ck: Codec[K], cv: Codec[V]
-  ): Codec[Map[K, V]] = new Codec[Map[K, V]] {
-    def encode(m: Map[K, V]): String = 
-      m.map { case (k, v) => s"${ck.encode(k)}:${cv.encode(v)}" }
-       .mkString(";")
-    def decode(s: String): Map[K, V] = 
-      s.split(";").map { pair =>
-        val Array(k, v) = pair.split(":")
-        ck.decode(k) -> cv.decode(v)
-      }.toMap
-  }
-}
-
-def serialize[A](value: A)(implicit codec: Codec[A]): String = 
-  codec.encode(value)
-
-// Компилятор строит цепочку implicit:
-serialize(42)                              // Codec[Int]
-serialize((1, 2))                          // Codec[(Int, Int)] требует 2x Codec[Int]
-serialize(Map(1 -> 2, 3 -> 4))            // Codec[Map[Int, Int]] требует 2x Codec[Int]
-```
-
----
-
-**7.4. Context Bounds (Контекстные границы)**
-
-**Синтаксический сахар для implicit параметров:**
-
-```scala
-// Без context bound - явный implicit параметр
-def printValue1[A](value: A)(implicit show: Show[A]): Unit = 
-  println(show.show(value))
-
-// С context bound - более короткий синтаксис
-def printValue2[A: Show](value: A): Unit = {
-  val show = implicitly[Show[A]]  // получаем implicit
-  println(show.show(value))
-}
-
-// Эквивалентны:
-printValue1(42)
-printValue2(42)
-
-// Context bound для нескольких type classes
-def process[A: Show: Codec: Ordering](value: A): Unit = {
-  val show = implicitly[Show[A]]
-  val codec = implicitly[Codec[A]]
-  val ord = implicitly[Ordering[A]]
-  
-  println(show.show(value))
-  // использование codec и ord
-}
-```
-
-**summoner pattern для context bounds:**
-
-```scala
-// Вместо implicitly можно создать apply метод в companion object
-trait Show[A] {
-  def show(a: A): String
-}
-
-object Show {
-  // summoner/apply метод
-  def apply[A](implicit show: Show[A]): Show[A] = show
-  
-  implicit val intShow: Show[Int] = _.toString
-}
-
-def printValue[A: Show](value: A): Unit = {
-  // Более чистый синтаксис вместо implicitly
-  println(Show[A].show(value))
-}
-
-// Или еще короче с extension method
-implicit class ShowOps[A](value: A) {
-  def show(implicit s: Show[A]): String = s.show(value)
-}
-
-def printValue2[A: Show](value: A): Unit = {
-  println(value.show)  // очень чисто!
-}
-```
-
----
-
-**7.5. Implicit Scope (Область видимости)**
-
-**Где компилятор ищет implicit значения:**
-
-```scala
-// 1. ТЕКУЩИЙ SCOPE
-def example1(): Unit = {
-  implicit val x: Int = 42
-  
-  def needsInt(implicit i: Int): Int = i
-  
-  println(needsInt)  // найдет x в текущем scope
-}
-
-// 2. IMPORTED SCOPE
-object MyImplicits {
-  implicit val y: Int = 100
-}
-
-def example2(): Unit = {
-  import MyImplicits.y
-  
-  def needsInt(implicit i: Int): Int = i
-  
-  println(needsInt)  // найдет y из import
-}
-
-// 3. COMPANION OBJECT самого типа
-case class Config(timeout: Int)
-
-object Config {
-  implicit val default: Config = Config(5000)
-}
-
-def useConfig(implicit config: Config): Unit = 
-  println(config.timeout)
-
-useConfig  // найдет Config.default автоматически
-
-// 4. COMPANION OBJECT type constructor'а
-trait Parser[A] {
-  def parse(s: String): A
-}
-
-object Parser {
-  implicit val intParser: Parser[Int] = (s: String) => s.toInt
-  implicit val stringParser: Parser[String] = (s: String) => s
-}
-
-def parse[A](s: String)(implicit parser: Parser[A]): A = 
-  parser.parse(s)
-
-parse[Int]("42")  // найдет Parser.intParser автоматически
-
-// 5. COMPANION OBJECTS родительских типов
-trait Animal
-case class Dog(name: String) extends Animal
-
-object Animal {
-  implicit val animalShow: Show[Animal] = ???
-}
-
-object Dog {
-  // наследует implicit из Animal companion object
-}
-
-// 6. OUTER SCOPE для вложенных определений
-class Outer {
-  implicit val outerValue: Int = 1
-  
-  class Inner {
-    def useImplicit(implicit i: Int): Int = i
-    
-    def test(): Unit = {
-      println(useImplicit)  // найдет outerValue из outer scope
-    }
-  }
-}
-```
-
----
-
-**7.6. Приоритет Implicit Resolution**
-
-**Конфликты и их разрешение:**
-
-```scala
-// Если несколько implicit подходят, компилятор выберет более специфичный
-
-// Пример 1: Локальный vs Imported
-object Implicits {
-  implicit val importedValue: Int = 100
-}
-
-def example(): Unit = {
-  import Implicits.importedValue
-  implicit val localValue: Int = 42  // более высокий приоритет
-  
-  def needsInt(implicit i: Int): Int = i
-  
-  println(needsInt)  // 42 - локальный побеждает
-}
-
-// Пример 2: Более специфичный тип побеждает
-trait Show[A] {
-  def show(a: A): String
-}
-
-object Show {
-  // Общий implicit для всех типов
-  implicit def anyShow[A]: Show[A] = (a: A) => a.toString
-  
-  // Специфичный implicit для Int
-  implicit val intShow: Show[Int] = (i: Int) => s"Int: $i"
-}
-
-def print[A](a: A)(implicit show: Show[A]): Unit = 
-  println(show.show(a))
-
-print(42)      // использует intShow (более специфичный)
-print("hello") // использует anyShow
-
-// Пример 3: Explicit import vs wildcard import
-object Implicits1 {
-  implicit val value1: Int = 1
-}
-
-object Implicits2 {
-  implicit val value2: Int = 2
-}
-
-def example2(): Unit = {
-  import Implicits1._              // wildcard import
-  import Implicits2.value2         // explicit import - выше приоритет
-  
-  def needsInt(implicit i: Int): Int = i
-  
-  println(needsInt)  // 2 - explicit import побеждает
-}
-```
-
-**Ambiguous Implicit Values:**
-
-```scala
-// ОШИБКА: ambiguous implicit values
-object Implicits1 {
-  implicit val timeout1: Int = 30
-}
-
-object Implicits2 {
-  implicit val timeout2: Int = 60
-}
-
-def example(): Unit = {
-  import Implicits1._
-  import Implicits2._
-  
-  def needsTimeout(implicit timeout: Int): Int = timeout
-  
-  // println(needsTimeout)  // ERROR: ambiguous implicit values
-  
-  // Решение: явно указать какой использовать
-  println(needsTimeout(Implicits1.timeout1))
-}
-```
-
----
-
-**7.7. Debugging Implicit Resolution**
-
-**Как понять, что нашел компилятор:**
-
-```scala
-// 1. Использование implicitly для проверки
-def checkImplicit(): Unit = {
-  implicit val x: Int = 42
-  
-  val found: Int = implicitly[Int]  // проверяем что implicit найден
-  println(found)  // 42
-}
-
-// 2. Compiler flags для отладки
-// -Xlog-implicits - показывает все implicit resolution
-// -Xprint:typer - показывает код после type checking
-
-// 3. Явное получение implicit для отладки
-def debugImplicit[A: Show](value: A): Unit = {
-  val show = implicitly[Show[A]]
-  println(s"Found Show: ${show.getClass.getName}")
-  println(show.show(value))
-}
-
-// 4. IntelliJ IDEA показывает implicit подсветкой
-def example()(implicit timeout: Int): Unit = {
-  println(timeout)  // IDE покажет откуда взят timeout
-}
-
-// 5. Ошибки компиляции подсказывают что искалось
-def needsShow[A](value: A)(implicit show: Show[A]): String = 
-  show.show(value)
-
-// needsShow(42)  
-// ERROR: could not find implicit value for parameter show: Show[Int]
-```
-
----
-
-**7.8. Best Practices для Implicit**
-
-```scala
-// ✅ ХОРОШО: Один implicit на тип в scope
-implicit val defaultTimeout: Int = 5000
-
-// ❌ ПЛОХО: Несколько implicit одного типа
-// implicit val timeout1: Int = 5000
-// implicit val timeout2: Int = 10000  // ambiguous!
-
-// ✅ ХОРОШО: Использование newtype для разных значений
-case class Timeout(value: Int)
-case class MaxRetries(value: Int)
-
-implicit val timeout: Timeout = Timeout(5000)
-implicit val retries: MaxRetries = MaxRetries(3)
-
-// ✅ ХОРОШО: Implicit в companion object
-trait Serializer[A] {
-  def serialize(a: A): String
-}
-
-object Serializer {
-  implicit val intSerializer: Serializer[Int] = _.toString
-}
-
-// ✅ ХОРОШО: Явные названия implicit значений
-implicit val defaultExecutionContext: ExecutionContext = ???
-implicit val jsonSerializer: Serializer[Json] = ???
-
-// ❌ ПЛОХО: Неявные имена
-// implicit val x = ???
-// implicit val impl = ???
-
-// ✅ ХОРОШО: Context bounds для чистоты
-def process[A: Ordering](list: List[A]): List[A] = list.sorted
-
-// ❌ ПЛОХО: Слишком много explicit implicit параметров
-// def process[A](list: List[A])(implicit o: Ordering[A], s: Show[A], c: Codec[A]): Unit
-
-// ✅ ХОРОШО: Группировка через type classes
-trait ProcessContext[A] {
-  def ordering: Ordering[A]
-  def show: Show[A]
-  def codec: Codec[A]
-}
-
-def process[A](list: List[A])(implicit ctx: ProcessContext[A]): Unit = ???
-
-// ✅ ХОРОШО: Package object для common implicits
-package object myapp {
-  implicit val defaultTimeout: Timeout = Timeout(5000)
-  implicit val defaultLogger: Logger = ConsoleLogger
-}
-
-// ❌ ПЛОХО: Implicit conversions (избегайте когда возможно)
-// implicit def intToString(x: Int): String = x.toString  // confusing!
-
-// ✅ ХОРОШО: Explicit extension methods
-implicit class RichInt(val x: Int) extends AnyVal {
-  def times(f: => Unit): Unit = (1 to x).foreach(_ => f)
-}
-```
-
----
-
-**7.9. Практические паттерны**
-
-```scala
-// 1. Type Class Pattern
-trait JsonWriter[A] {
-  def write(value: A): Json
-}
-
-object JsonWriter {
-  def apply[A](implicit writer: JsonWriter[A]): JsonWriter[A] = writer
-  
-  implicit val stringWriter: JsonWriter[String] = 
-    str => JsString(str)
-  
-  implicit val intWriter: JsonWriter[Int] = 
-    num => JsNumber(num)
-  
-  implicit def listWriter[A](implicit writer: JsonWriter[A]): JsonWriter[List[A]] = 
-    list => JsArray(list.map(writer.write))
-}
-
-// 2. Implicit Evidence Pattern (constraint)
-def onlyNumbers[A](value: A)(implicit ev: A =:= Int): Int = value
-
-onlyNumbers(42)       // OK
-// onlyNumbers("hello")  // ERROR: cannot prove String =:= Int
-
-// 3. Implicit Not Found annotation
-@implicitNotFound("No JsonWriter found for type ${A}. Please provide an implicit JsonWriter[${A}]")
-trait JsonWriter[A] {
-  def write(value: A): Json
-}
-
-// Теперь ошибка будет более информативной
-
-// 4. Conditional Implicit (Low Priority)
-trait LowPriorityImplicits {
-  implicit def defaultShow[A]: Show[A] = (a: A) => a.toString
-}
-
-object Show extends LowPriorityImplicits {
-  implicit val intShow: Show[Int] = (i: Int) => s"Int($i)"
-  // intShow имеет выше приоритет чем defaultShow
-}
-
-// 5. Materialization pattern
-trait Default[A] {
-  def value: A
-}
-
-object Default {
-  def apply[A](implicit default: Default[A]): Default[A] = default
-  
-  // Macro для автоматической генерации Default instances
-  implicit def materialize[A]: Default[A] = macro materializeImpl[A]
-}
-```
-
----
-
 ##### 8. Implicit Conversions и Implicit Parameters
 
 **Implicit Conversions:**
@@ -3817,26 +3141,229 @@ object ScalaCategory {
 
 **11.2. Функтор (Functor)**
 
-**Определение:**
+**Математическое определение функтора:**
 
-Функтор - это отображение между категориями, которое:
-1. Отображает объекты в объекты
-2. Отображает морфизмы в морфизмы
-3. Сохраняет композицию
-4. Сохраняет identity
+Функтор F из категории C в категорию D - это отображение, состоящее из двух компонентов:
+
+1. **Отображение объектов**: Для каждого объекта A в C существует объект F(A) в D
+2. **Отображение морфизмов**: Для каждого морфизма f: A → B в C существует морфизм F(f): F(A) → F(B) в D
+
+Функтор должен удовлетворять двум аксиомам:
+- **Сохранение identity**: F(idₐ) = id_F(A)
+- **Сохранение композиции**: F(g ∘ f) = F(g) ∘ F(f)
+
+**Диаграмма функтора:**
+
+```
+Категория C                    Категория D
+                              
+    A --------f------> B           F(A) -----F(f)-----> F(B)
+    |                  |            |                     |
+    |                  |     F      |                     |
+   idₐ               idᵦ    =>    id_F(A)             id_F(B)
+    |                  |            |                     |
+    ↓                  ↓            ↓                     ↓
+    A                  B           F(A)                 F(B)
+
+
+Композиция морфизмов:
+
+    A ----f----> B ----g----> C
+         
+    A ----------g∘f---------> C
+
+Функтор сохраняет композицию:
+
+Категория C:              Категория D:
+
+    A ----f----> B              F(A) ----F(f)----> F(B)
+              ∖  |                              ∖    |
+            g∘f  | g                      F(g∘f)  | F(g)
+                ∖|                                ∖  |
+                 C                                 F(C)
+
+F(g ∘ f) = F(g) ∘ F(f)
+```
 
 **В программировании:**
+
 Функтор - это type constructor `F[_]` с операцией `map`, которая применяет функцию к значению внутри контейнера.
+
+В контексте Scala:
+- **Категория C** = категория типов Scala
+- **Категория D** = та же категория (эндофунктор)
+- **Объект A** = тип A (Int, String, User, etc.)
+- **F(A)** = параметризованный тип F[A] (Option[A], List[A], etc.)
+- **Морфизм f: A → B** = функция f: A => B
+- **F(f): F(A) → F(B)** = функция map, которая применяет f внутри контекста F
 
 **Trait Functor:**
 ```scala
 trait Functor[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
 }
+```
 
-// Законы функтора:
-// 1. Identity: map(fa)(identity) == fa
-// 2. Composition: map(map(fa)(f))(g) == map(fa)(f andThen g)
+**Законы функтора (формально):**
+
+**1. Закон Identity (тождества):**
+```scala
+// Применение identity функции через map не должно изменять структуру
+map(fa)(identity) == fa
+
+// Или в инфиксной нотации:
+fa.map(x => x) == fa
+fa.map(identity) == fa
+
+// Математически:
+F(idₐ) = id_F(A)
+```
+
+**Пример:**
+```scala
+val list = List(1, 2, 3)
+
+list.map(x => x) == list                    // true
+list.map(identity) == list                  // true
+
+val option = Some(42)
+option.map(x => x) == option                // true
+
+// Identity не меняет структуру:
+List(1, 2, 3).map(identity)                 // List(1, 2, 3)
+Some(42).map(identity)                      // Some(42)
+None.map(identity)                          // None
+```
+
+**2. Закон Composition (композиции):**
+```scala
+// Последовательное применение двух функций должно быть эквивалентно
+// применению их композиции
+map(map(fa)(f))(g) == map(fa)(f andThen g)
+
+// Или:
+fa.map(f).map(g) == fa.map(f andThen g)
+fa.map(f).map(g) == fa.map(x => g(f(x)))
+
+// Математически:
+F(g ∘ f) = F(g) ∘ F(f)
+```
+
+**Пример:**
+```scala
+val list = List(1, 2, 3)
+val f: Int => Int = _ * 2        // умножить на 2
+val g: Int => String = _.toString // преобразовать в строку
+
+// Две последовательные map
+val result1 = list.map(f).map(g)  
+// List("2", "4", "6")
+
+// Одна map с композицией
+val result2 = list.map(f andThen g)
+// List("2", "4", "6")
+
+result1 == result2  // true
+
+// Визуализация:
+//     map(f)        map(g)
+// List(1,2,3) -> List(2,4,6) -> List("2","4","6")
+//
+// эквивалентно:
+//         map(f andThen g)
+// List(1,2,3) -----------------> List("2","4","6")
+```
+
+**Диаграмма законов в коде:**
+
+```
+Закон Identity:
+
+    F[A] ----map(id)----> F[A]
+     |                     |
+     |                     |
+    id_F[A]              id_F[A]
+     |                     |
+     ↓                     ↓
+    F[A] =============== F[A]
+
+
+Закон Composition:
+
+                 f              g
+           A -------> B -------> C
+           
+           A ---------g∘f-------> C
+
+Применяем F:
+
+              map(f)        map(g)
+       F[A] --------> F[B] --------> F[C]
+        |                             |
+        |        map(g∘f)             |
+        +---------------------------+
+        
+       F[A].map(f).map(g) === F[A].map(f andThen g)
+```
+
+**Проверка законов в коде:**
+```scala
+import org.scalacheck.Prop.forAll
+import org.scalacheck.Properties
+
+object FunctorLaws extends Properties("Functor") {
+  
+  // Закон Identity для List
+  property("identity law for List") = forAll { (list: List[Int]) =>
+    val id = (x: Int) => x
+    list.map(id) == list
+  }
+  
+  // Закон Composition для List
+  property("composition law for List") = forAll { (list: List[Int]) =>
+    val f = (x: Int) => x * 2
+    val g = (x: Int) => x + 1
+    
+    val left = list.map(f).map(g)
+    val right = list.map(f andThen g)
+    
+    left == right
+  }
+  
+  // Закон Identity для Option
+  property("identity law for Option") = forAll { (opt: Option[Int]) =>
+    opt.map(identity) == opt
+  }
+  
+  // Закон Composition для Option
+  property("composition law for Option") = forAll { (opt: Option[String]) =>
+    val f = (s: String) => s.toUpperCase
+    val g = (s: String) => s.length
+    
+    opt.map(f).map(g) == opt.map(f andThen g)
+  }
+}
+```
+
+**Интуиция за законами:**
+
+**Identity закон** гарантирует, что функтор не добавляет никакой "дополнительной логики" при применении identity функции. Он просто честно применяет функцию к содержимому.
+
+**Composition закон** гарантирует, что порядок применения map не имеет значения с точки зрения эффективности и результата. Это позволяет оптимизировать код через fusion (слияние последовательных map в одну).
+
+**Почему законы важны:**
+
+```scala
+// Без законов функтора мы не могли бы делать такие оптимизации:
+
+// Неоптимальный код:
+list.map(f).map(g).map(h)  // 3 прохода по списку
+
+// Оптимизированный код (благодаря закону композиции):
+list.map(f andThen g andThen h)  // 1 проход по списку
+
+// Компилятор или библиотека может автоматически применить эту оптимизацию,
+// зная что функтор соблюдает законы
 ```
 
 **Примеры функторов в Scala:**
