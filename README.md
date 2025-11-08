@@ -164,10 +164,64 @@
 **Практические задачи и вопросы**
 
 #### [День 5-7: Type System](#день-5-7-type-system)
-- Variance annotations
-- Type classes
-- Higher-kinded types
-- Path-dependent types
+
+**📖 Теоретические материалы:**
+
+21. [Higher-Kinded Types (HKT)](#21-higher-kinded-types-hkt---типы-высшего-порядка)
+    - [Виды (Kinds) типов](#виды-kinds-типов)
+    - [F[_] vs F[A]](#f_-vs-fa)
+    - [Практическое применение](#практическое-применение---абстракция-над-контейнерами)
+    - [Ограничения HKT в Scala](#ограничения-hkt-в-scala)
+
+22. [Type Bounds](#22-type-bounds-границы-типов)
+    - [22.1. Upper Type Bound (<:)](#221-upper-type-bound-верхняя-граница---)
+    - [22.2. Lower Type Bound (>:)](#222-lower-type-bound-нижняя-граница---)
+    - [22.3. Сочетание Upper и Lower bounds](#223-сочетание-upper-и-lower-bounds)
+    - [22.4. View Bounds](#224-view-bounds-устаревшие-в-scala-213)
+
+23. [Type Classes](#23-type-classes-классы-типов)
+    - [23.1. Проблема, которую решают type classes](#231-проблема-которую-решают-type-classes)
+    - [23.2. Решение с Type Classes](#232-решение-с-type-classes)
+    - [23.3. Улучшенный синтаксис](#233-улучшенный-синтаксис-interface-syntax)
+    - [23.4. Type Class Laws](#234-type-class-laws-законы)
+    - [23.5. Стандартные Type Classes](#235-стандартные-type-classes)
+    - [23.6. Type Classes vs Inheritance](#236-type-classes-vs-inheritance)
+
+24. [Context Bounds](#24-context-bounds-контекстные-границы)
+    - [24.1. Базовый синтаксис](#241-базовый-синтаксис)
+    - [24.2. Множественные context bounds](#242-множественные-context-bounds)
+    - [24.3. Context bounds с Higher-Kinded Types](#243-context-bounds-с-higher-kinded-types)
+    - [24.4. Доступ к implicit instance](#244-доступ-к-implicit-instance)
+    - [24.5. Context bounds в классах](#245-context-bounds-в-классах)
+    - [24.6. Практический пример](#246-практический-пример---generic-сортировка)
+
+25. [Path-Dependent Types](#25-path-dependent-types-путе-зависимые-типы)
+    - [25.1. Базовый пример](#251-базовый-пример)
+    - [25.2. Практический пример - Graph](#252-практический-пример---graph)
+    - [25.3. Type Projection](#253-type-projection----hash)
+    - [25.4. Abstract Type Members](#254-abstract-type-members)
+    - [25.5. Cake Pattern](#255-cake-pattern-dependency-injection)
+    - [25.6. Type Refinement](#256-type-refinement)
+
+26. [Phantom Types](#26-phantom-types-фантомные-типы)
+    - [26.1. Базовый пример - Type-safe API](#261-базовый-пример---type-safe-api)
+    - [26.2. Пример - Validated Data](#262-пример---validated-data)
+    - [26.3. Пример - Builder Pattern](#263-пример---builder-pattern)
+    - [26.4. Пример - Units of Measure](#264-пример---units-of-measure)
+    - [26.5. Преимущества Phantom Types](#265-преимущества-phantom-types)
+
+27. [Existential Types](#27-existential-types-экзистенциальные-типы)
+    - [27.1. Базовый синтаксис](#271-базовый-синтаксис)
+    - [27.2. Практический пример](#272-практический-пример---heterogeneous-collections)
+    - [27.3. Existential types с Type Members](#273-existential-types-с-type-members)
+    - [27.4. Bounded Existentials](#274-bounded-existentials)
+    - [27.5. Захват экзистенциальных типов](#275-захват-экзистенциальных-типов)
+    - [27.6. Java Interop](#276-java-interop)
+    - [27.7. Когда использовать](#277-когда-использовать-existential-types)
+    - [27.8. Deprecation в Scala 3](#278-deprecation-в-scala-3)
+
+**Практические задачи и вопросы**
+
 
 ### [🚀 Неделя 2: Scala Collections + Concurrency](#-неделя-2-scala-collections--concurrency)
 
@@ -6235,6 +6289,1332 @@ def compose[A, B, C](f: A => Option[B], g: B => Option[C]): A => Option[C] = ???
 - Existential types
 - Phantom types
 - Higher-kinded types (HKT)
+
+---
+
+#### 📖 Теоретические материалы
+
+---
+
+##### 21. Higher-Kinded Types (HKT) - Типы высшего порядка
+
+**Определение:**
+
+Higher-Kinded Type (тип высшего порядка) - это тип, который абстрагируется над type constructor'ом, а не над конкретным типом.
+
+**Виды (Kinds) типов:**
+
+```scala
+// Kind * - обычные типы (proper types)
+// Примеры: Int, String, Boolean, User
+// Можно создать значение этого типа
+
+val x: Int = 42
+val s: String = "hello"
+
+// Kind * -> * - type constructor с одним параметром
+// Примеры: List, Option, Future
+// НЕЛЬЗЯ создать значение типа List (без параметра)
+// Можно создать: List[Int], Option[String]
+
+// val list: List = ???  // ❌ Ошибка компиляции
+val list: List[Int] = List(1, 2, 3)  // ✅ OK
+
+// Kind * -> * -> * - type constructor с двумя параметрами
+// Примеры: Map, Either, Function1
+type MyMap = Map[String, Int]
+type MyEither = Either[String, Int]
+type MyFunc = String => Int  // Function1[String, Int]
+
+// Kind (* -> *) -> * - Higher-Kinded Type
+// Абстракция над type constructor'ом
+trait Functor[F[_]] {  // F[_] - это type constructor
+  def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+```
+
+**F[_] vs F[A]:**
+
+```scala
+// F[A] - конкретный тип (proper type), где F и A известны
+def processOption(opt: Option[Int]): Int = opt.getOrElse(0)
+
+// F[_] - type constructor, абстракция над структурой
+trait Container[F[_]] {
+  def wrap[A](value: A): F[A]
+  def unwrap[A](fa: F[A]): Option[A]
+}
+
+// Можем реализовать для разных F
+object OptionContainer extends Container[Option] {
+  def wrap[A](value: A): Option[A] = Some(value)
+  def unwrap[A](fa: Option[A]): Option[A] = fa
+}
+
+object ListContainer extends Container[List] {
+  def wrap[A](value: A): List[A] = List(value)
+  def unwrap[A](fa: List[A]): Option[A] = fa.headOption
+}
+```
+
+**Практическое применение - Абстракция над контейнерами:**
+
+```scala
+// Пример 1: Функтор - работает с любым F[_]
+trait Functor[F[_]] {
+  def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+
+implicit val listFunctor: Functor[List] = new Functor[List] {
+  def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
+}
+
+implicit val optionFunctor: Functor[Option] = new Functor[Option] {
+  def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
+}
+
+// Универсальная функция работающая с любым функтором
+def increment[F[_]: Functor](fa: F[Int]): F[Int] = {
+  val functor = implicitly[Functor[F]]
+  functor.map(fa)(_ + 1)
+}
+
+increment(List(1, 2, 3))    // List(2, 3, 4)
+increment(Some(5))          // Some(6)
+```
+
+**Пример 2: Монада**
+
+```scala
+trait Monad[F[_]] extends Functor[F] {
+  def pure[A](a: A): F[A]
+  def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+  
+  // map можно выразить через flatMap и pure
+  def map[A, B](fa: F[A])(f: A => B): F[B] = 
+    flatMap(fa)(a => pure(f(a)))
+}
+
+implicit val listMonad: Monad[List] = new Monad[List] {
+  def pure[A](a: A): List[A] = List(a)
+  def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] = fa.flatMap(f)
+}
+
+// Универсальные функции для любой монады
+def sequence[F[_]: Monad, A](list: List[F[A]]): F[List[A]] = {
+  val m = implicitly[Monad[F]]
+  list.foldRight(m.pure(List.empty[A])) { (fa, acc) =>
+    m.flatMap(fa) { a =>
+      m.map(acc)(list => a :: list)
+    }
+  }
+}
+
+sequence(List(Some(1), Some(2), Some(3)))  // Some(List(1, 2, 3))
+sequence(List(Some(1), None, Some(3)))     // None
+```
+
+**Ограничения HKT в Scala:**
+
+```scala
+// ✅ Работает - F[_] с одним параметром
+trait Functor[F[_]] {
+  def map[A, B](fa: F[A])(f: A => B): F[B]
+}
+
+// ❌ Не работает напрямую - Either имеет два параметра
+// trait EitherFunctor[Either[_, _]] - так нельзя
+
+// ✅ Решение - type lambda (частичное применение типов)
+type EitherString[A] = Either[String, A]
+
+implicit val eitherFunctor: Functor[EitherString] = new Functor[EitherString] {
+  def map[A, B](fa: Either[String, A])(f: A => B): Either[String, B] = 
+    fa.map(f)
+}
+
+// Или с помощью kind-projector plugin:
+// implicit def eitherFunctor[E]: Functor[Either[E, *]]
+```
+
+**Kind-projector plugin:**
+
+```scala
+// В build.sbt:
+// addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)
+
+// Синтаксис с kind-projector
+trait Bifunctor[F[_, _]] {
+  def bimap[A, B, C, D](fab: F[A, B])(f: A => C, g: B => D): F[C, D]
+}
+
+implicit val eitherBifunctor: Bifunctor[Either] = new Bifunctor[Either] {
+  def bimap[A, B, C, D](fab: Either[A, B])(f: A => C, g: B => D): Either[C, D] = 
+    fab match {
+      case Left(a) => Left(f(a))
+      case Right(b) => Right(g(b))
+    }
+}
+
+// Type lambda с kind-projector
+type StringOr[A] = Either[String, A]  // старый способ
+
+// С kind-projector можно писать:
+// Either[String, *] или Either[String, ?]
+```
+
+---
+
+##### 22. Type Bounds (Границы типов)
+
+**22.1. Upper Type Bound (верхняя граница) - <:**
+
+Означает: "тип должен быть подтипом указанного типа"
+
+```scala
+// Базовая иерархия
+trait Animal {
+  def name: String
+}
+class Dog extends Animal {
+  def name = "Dog"
+  def bark(): Unit = println("Woof!")
+}
+class Cat extends Animal {
+  def name = "Cat"
+  def meow(): Unit = println("Meow!")
+}
+
+// Upper bound - принимаем только Animal и его подтипы
+class Shelter[A <: Animal](animals: List[A]) {
+  def names: List[String] = animals.map(_.name)
+  
+  // Можем вызывать методы Animal, так как A <: Animal
+  def printNames(): Unit = animals.foreach(a => println(a.name))
+}
+
+// ✅ Работает
+val dogShelter = new Shelter[Dog](List(new Dog, new Dog))
+val catShelter = new Shelter[Cat](List(new Cat))
+val animalShelter = new Shelter[Animal](List(new Dog, new Cat))
+
+// ❌ Не компилируется
+// val shelter = new Shelter[String](List("hello"))
+// Error: String не является подтипом Animal
+```
+
+**Практическое применение upper bounds:**
+
+```scala
+// Пример 1: Сортировка
+def sort[A <: Comparable[A]](list: List[A]): List[A] = 
+  list.sorted
+
+// Пример 2: Ограничение на числовые типы
+def sum[A <: AnyVal](numbers: List[A])(implicit num: Numeric[A]): A = 
+  numbers.sum
+
+// Пример 3: С multiple bounds
+trait Serializable
+trait Printable {
+  def print(): String
+}
+
+// A должен быть подтипом И Animal, И Serializable
+class Zoo[A <: Animal with Serializable](animals: List[A])
+
+// Или с контекстными границами:
+class AdvancedZoo[A <: Animal : Ordering](animals: List[A]) {
+  def sorted: List[A] = animals.sorted
+}
+```
+
+**22.2. Lower Type Bound (нижняя граница) - >:**
+
+Означает: "тип должен быть супертипом указанного типа"
+
+```scala
+// Lower bound используется чаще всего с variance
+class Box[+A] {
+  // Без lower bound это не скомпилируется (variance problem)
+  // def add(item: A): Box[A] = ???  // ❌ Error
+  
+  // С lower bound - ✅ OK
+  def add[B >: A](item: B): Box[B] = new Box[B]
+}
+
+val animalBox: Box[Animal] = new Box[Dog]
+// Можем добавить Cat (супертип Dog - это Animal)
+val mixedBox: Box[Animal] = animalBox.add(new Cat)
+```
+
+**Практические примеры lower bounds:**
+
+```scala
+// Пример 1: Добавление элементов в коварiantную структуру
+sealed trait MyList[+A] {
+  def prepend[B >: A](elem: B): MyList[B]
+}
+
+case object Empty extends MyList[Nothing] {
+  def prepend[B >: Nothing](elem: B): MyList[B] = Cons(elem, Empty)
+}
+
+case class Cons[A](head: A, tail: MyList[A]) extends MyList[A] {
+  def prepend[B >: A](elem: B): MyList[B] = Cons(elem, this)
+}
+
+val dogList: MyList[Dog] = Cons(new Dog, Empty)
+val animalList: MyList[Animal] = dogList.prepend(new Cat)  // ✅ OK
+
+// Пример 2: Стандартная библиотека Scala
+// def ::[B >: A](elem: B): List[B]
+
+val dogs: List[Dog] = List(new Dog)
+val animals: List[Animal] = new Cat :: dogs  // ✅ OK
+```
+
+**22.3. Сочетание Upper и Lower bounds:**
+
+```scala
+class Container[A] {
+  // Метод принимает супертип A, возвращает подтип A
+  def transform[B >: A, C <: A](f: B => C): C = ???
+}
+
+// Пример с Option
+sealed trait MyOption[+A] {
+  // getOrElse принимает супертип A (для default value)
+  def getOrElse[B >: A](default: => B): B
+  
+  // map сохраняет ковариантность
+  def map[B](f: A => B): MyOption[B]
+  
+  // filter требует суперкласс A для предиката
+  def filter(p: A => Boolean): MyOption[A]
+}
+```
+
+**22.4. View Bounds (устаревшие в Scala 2.13+):**
+
+```scala
+// Старый синтаксис (deprecated):
+def printSorted[A <% Ordered[A]](list: List[A]): Unit = 
+  list.sorted.foreach(println)
+
+// Современный эквивалент - используйте Ordering:
+def printSorted[A: Ordering](list: List[A]): Unit = 
+  list.sorted.foreach(println)
+
+// Или явно:
+def printSorted[A](list: List[A])(implicit ord: Ordering[A]): Unit = 
+  list.sorted.foreach(println)
+```
+
+---
+
+##### 23. Type Classes (Классы типов)
+
+**Определение:**
+
+Type class - это паттерн, позволяющий добавлять новую функциональность к существующим типам без изменения их исходного кода. Это форма ad-hoc полиморфизма.
+
+**23.1. Проблема, которую решают type classes:**
+
+```scala
+// Представим, у нас есть разные типы:
+case class User(name: String, age: Int)
+case class Product(id: Long, name: String, price: Double)
+
+// Мы хотим сериализовать их в JSON
+// Вариант 1 (ООП) - добавить метод toJson:
+trait JsonSerializable {
+  def toJson: String
+}
+
+case class User(name: String, age: Int) extends JsonSerializable {
+  def toJson: String = s"""{"name": "$name", "age": $age}"""
+}
+
+// ❌ Проблемы:
+// 1. Нужно изменять исходный код классов
+// 2. Не работает с типами из библиотек (Int, String, List)
+// 3. Один класс = один способ сериализации
+```
+
+**23.2. Решение с Type Classes:**
+
+```scala
+// Шаг 1: Определяем type class
+trait JsonSerializer[A] {
+  def toJson(value: A): String
+}
+
+// Шаг 2: Создаем instances для конкретных типов
+object JsonSerializer {
+  // Instance для Int
+  implicit val intSerializer: JsonSerializer[Int] = 
+    (value: Int) => value.toString
+  
+  // Instance для String
+  implicit val stringSerializer: JsonSerializer[String] = 
+    (value: String) => s""""$value""""
+  
+  // Instance для User
+  implicit val userSerializer: JsonSerializer[User] = 
+    (user: User) => s"""{"name": "${user.name}", "age": ${user.age}}"""
+  
+  // Generic instance для List
+  implicit def listSerializer[A](implicit ser: JsonSerializer[A]): JsonSerializer[List[A]] = 
+    (list: List[A]) => list.map(ser.toJson).mkString("[", ", ", "]")
+}
+
+// Шаг 3: Используем type class
+def toJson[A](value: A)(implicit serializer: JsonSerializer[A]): String = 
+  serializer.toJson(value)
+
+// Или с context bound:
+def toJson[A: JsonSerializer](value: A): String = 
+  implicitly[JsonSerializer[A]].toJson(value)
+
+// Использование:
+import JsonSerializer._
+
+toJson(42)                        // "42"
+toJson("hello")                   // "\"hello\""
+toJson(User("Alice", 30))         // {"name": "Alice", "age": 30}
+toJson(List(1, 2, 3))             // [1, 2, 3]
+```
+
+**23.3. Улучшенный синтаксис (Interface Syntax):**
+
+```scala
+// Добавим вспомогательные методы
+object JsonSerializer {
+  // Summoner method
+  def apply[A](implicit instance: JsonSerializer[A]): JsonSerializer[A] = instance
+  
+  // Constructor method
+  def instance[A](f: A => String): JsonSerializer[A] = 
+    (value: A) => f(value)
+}
+
+// Syntax extension (неявное расширение)
+implicit class JsonSyntax[A](value: A) {
+  def toJson(implicit serializer: JsonSerializer[A]): String = 
+    serializer.toJson(value)
+}
+
+// Теперь можно писать:
+import JsonSerializer._
+
+42.toJson                         // "42"
+"hello".toJson                    // "\"hello\""
+User("Bob", 25).toJson            // {"name": "Bob", "age": 25}
+List(1, 2, 3).toJson              // [1, 2, 3]
+```
+
+**23.4. Type Class Laws (законы):**
+
+Многие type classes имеют законы, которым должны следовать instances:
+
+```scala
+// Пример: Monoid type class
+trait Monoid[A] {
+  def empty: A
+  def combine(x: A, y: A): A
+}
+
+// Законы Monoid:
+// 1. Ассоциативность: combine(x, combine(y, z)) == combine(combine(x, y), z)
+// 2. Левая идентичность: combine(empty, x) == x
+// 3. Правая идентичность: combine(x, empty) == x
+
+implicit val intAdditionMonoid: Monoid[Int] = new Monoid[Int] {
+  def empty: Int = 0
+  def combine(x: Int, y: Int): Int = x + y
+}
+
+// Проверка законов:
+// combine(1, combine(2, 3)) == combine(combine(1, 2), 3)  // 6 == 6 ✅
+// combine(0, 5) == 5  // ✅
+// combine(5, 0) == 5  // ✅
+
+implicit val stringMonoid: Monoid[String] = new Monoid[String] {
+  def empty: String = ""
+  def combine(x: String, y: String): String = x + y
+}
+```
+
+**23.5. Стандартные Type Classes:**
+
+```scala
+// Ordering - упорядочивание
+def sort[A: Ordering](list: List[A]): List[A] = list.sorted
+
+// Numeric - числовые операции
+def sum[A: Numeric](list: List[A]): A = list.sum
+
+// Show (из Cats) - преобразование в строку
+import cats.Show
+import cats.implicits._
+
+case class Person(name: String, age: Int)
+
+implicit val personShow: Show[Person] = Show.show { person =>
+  s"${person.name} is ${person.age} years old"
+}
+
+Person("Alice", 30).show  // "Alice is 30 years old"
+
+// Eq (из Cats) - type-safe сравнение
+import cats.Eq
+import cats.syntax.eq._
+
+implicit val personEq: Eq[Person] = Eq.fromUniversalEquals
+
+Person("Alice", 30) === Person("Alice", 30)  // true
+Person("Alice", 30) =!= Person("Bob", 25)    // true
+```
+
+**23.6. Type Classes vs Inheritance:**
+
+```scala
+// ООП подход (наследование):
+trait Printable {
+  def print: String
+}
+
+case class User(name: String) extends Printable {
+  def print: String = s"User: $name"
+}
+
+// ❌ Проблемы:
+// - Нельзя добавить к существующим типам (Int, String)
+// - Жесткая связь (coupling)
+// - Только один способ реализации
+
+// Type Class подход:
+trait Printer[A] {
+  def print(value: A): String
+}
+
+implicit val userPrinter: Printer[User] = 
+  (user: User) => s"User: ${user.name}"
+
+implicit val verboseUserPrinter: Printer[User] = 
+  (user: User) => s"User Details: Name=${user.name}"
+
+// ✅ Преимущества:
+// - Работает с любыми типами
+// - Слабая связь (loose coupling)
+// - Множественные реализации (в разных scope)
+// - Retroactive extension (добавление функциональности постфактум)
+```
+
+---
+
+##### 24. Context Bounds (Контекстные границы)
+
+**Определение:**
+
+Context bound - это синтаксический сахар для implicit параметров с type classes.
+
+**24.1. Базовый синтаксис:**
+
+```scala
+// Полная форма с implicit параметром:
+def show[A](value: A)(implicit shower: Show[A]): String = 
+  shower.show(value)
+
+// Context bound (сокращенная форма):
+def show[A: Show](value: A): String = 
+  implicitly[Show[A]].show(value)
+
+// Или еще короче с summoner:
+def show[A: Show](value: A): String = 
+  Show[A].show(value)  // если есть def apply[A](implicit ev: Show[A])
+```
+
+**24.2. Множественные context bounds:**
+
+```scala
+// Несколько type classes
+def processData[A: Ordering : Numeric : Show](list: List[A]): String = {
+  val sorted = list.sorted                    // использует Ordering
+  val sum = sorted.sum                        // использует Numeric
+  Show[A].show(sum)                          // использует Show
+}
+
+// Эквивалентно:
+def processData[A](list: List[A])(
+  implicit ord: Ordering[A], 
+  num: Numeric[A], 
+  show: Show[A]
+): String = {
+  val sorted = list.sorted(ord)
+  val sum = num.plus(sorted.reduce(num.plus), num.zero)
+  show.show(sum)
+}
+```
+
+**24.3. Context bounds с Higher-Kinded Types:**
+
+```scala
+// F[_] с context bound
+def sequence[F[_]: Monad, A](list: List[F[A]]): F[List[A]] = {
+  val m = implicitly[Monad[F]]
+  list.foldRight(m.pure(List.empty[A])) { (fa, acc) =>
+    m.flatMap(fa)(a => m.map(acc)(a :: _))
+  }
+}
+
+// Использование:
+sequence(List(Some(1), Some(2), Some(3)))  // Some(List(1, 2, 3))
+sequence(List(Right(1), Right(2)))         // Right(List(1, 2))
+```
+
+**24.4. Доступ к implicit instance:**
+
+```scala
+// Способ 1: implicitly
+def method1[A: Ordering](list: List[A]): List[A] = {
+  val ord = implicitly[Ordering[A]]
+  list.sorted(ord)
+}
+
+// Способ 2: summoner (если определен apply)
+trait Show[A] {
+  def show(value: A): String
+}
+
+object Show {
+  def apply[A](implicit instance: Show[A]): Show[A] = instance
+}
+
+def method2[A: Show](value: A): String = {
+  Show[A].show(value)  // Вызов summoner
+}
+
+// Способ 3: явный implicit параметр (если нужно имя)
+def method3[A: Ordering](list: List[A]): List[A] = {
+  implicitly[Ordering[A]] match {
+    case ord => list.sorted(ord)
+  }
+}
+```
+
+**24.5. Context bounds в классах:**
+
+```scala
+// В классах context bounds работают так же
+class Container[A: Ordering](elements: List[A]) {
+  def sorted: List[A] = elements.sorted
+  
+  def max: A = elements.max
+  
+  def isSorted: Boolean = {
+    val ord = implicitly[Ordering[A]]
+    elements.sliding(2).forall { 
+      case List(a, b) => ord.lteq(a, b)
+      case _ => true
+    }
+  }
+}
+
+// Использование:
+val intContainer = new Container(List(3, 1, 4, 1, 5))
+intContainer.sorted   // List(1, 1, 3, 4, 5)
+intContainer.max      // 5
+```
+
+**24.6. Практический пример - Generic сортировка:**
+
+```scala
+case class Person(name: String, age: Int)
+
+// Определяем разные Ordering instances
+object Person {
+  implicit val orderByName: Ordering[Person] = 
+    Ordering.by(_.name)
+  
+  val orderByAge: Ordering[Person] = 
+    Ordering.by(_.age)
+}
+
+// Generic функция с context bound
+def sortAndPrint[A: Ordering : Show](items: List[A]): Unit = {
+  val sorted = items.sorted
+  sorted.foreach(item => println(Show[A].show(item)))
+}
+
+// Можем менять ordering через implicit scope
+{
+  import Person.orderByName
+  sortAndPrint(persons)  // сортирует по имени
+}
+
+{
+  implicit val ord = Person.orderByAge
+  sortAndPrint(persons)  // сортирует по возрасту
+}
+```
+
+---
+
+##### 25. Path-Dependent Types (Путе-зависимые типы)
+
+**Определение:**
+
+Path-dependent type - это тип, который зависит от конкретного экземпляра (пути к значению), а не только от класса.
+
+**25.1. Базовый пример:**
+
+```scala
+class Outer {
+  class Inner {
+    def sayHi(): Unit = println("Hi from Inner")
+  }
+  
+  def createInner(): Inner = new Inner
+}
+
+val outer1 = new Outer
+val outer2 = new Outer
+
+val inner1: outer1.Inner = outer1.createInner()  // path-dependent type
+val inner2: outer2.Inner = outer2.createInner()
+
+// inner1 и inner2 имеют РАЗНЫЕ типы!
+// inner1: outer1.Inner
+// inner2: outer2.Inner
+
+// ❌ Не компилируется:
+// val wrongInner: outer1.Inner = outer2.createInner()
+// Error: type mismatch
+```
+
+**25.2. Практический пример - Graph:**
+
+```scala
+class Graph {
+  // Вложенные классы зависят от экземпляра Graph
+  class Node(val value: Int) {
+    def connectTo(other: Node): Edge = new Edge(this, other)
+  }
+  
+  class Edge(val from: Node, val to: Node)
+  
+  def createNode(value: Int): Node = new Node(value)
+}
+
+val graph1 = new Graph
+val graph2 = new Graph
+
+val node1a: graph1.Node = graph1.createNode(1)
+val node1b: graph1.Node = graph1.createNode(2)
+val node2a: graph2.Node = graph2.createNode(3)
+
+// ✅ OK - оба узла из graph1
+val edge1: graph1.Edge = node1a.connectTo(node1b)
+
+// ❌ Не компилируется - узлы из разных графов
+// val invalidEdge: graph1.Edge = node1a.connectTo(node2a)
+// Error: type mismatch - узлы должны быть из одного графа!
+
+// Это type safety на уровне компилятора!
+```
+
+**25.3. Type Projection - # (hash):**
+
+Иногда нужно абстрагироваться от конкретного пути:
+
+```scala
+class Database {
+  class Table(val name: String) {
+    def query(sql: String): List[String] = List(s"Result from $name")
+  }
+}
+
+// Path-dependent type:
+def processTable(table: database.Table): Unit = ???  // привязан к database
+
+// Type projection - любая Table из любой Database:
+def processAnyTable(table: Database#Table): Unit = {
+  println(table.query("SELECT *"))
+}
+
+val db1 = new Database
+val db2 = new Database
+
+val table1 = new db1.Table("users")
+val table2 = new db2.Table("orders")
+
+processAnyTable(table1)  // ✅ OK
+processAnyTable(table2)  // ✅ OK
+```
+
+**25.4. Abstract Type Members:**
+
+```scala
+trait Container {
+  type Element  // абстрактный type member
+  
+  def add(elem: Element): Unit
+  def get(): Element
+}
+
+class IntContainer extends Container {
+  type Element = Int
+  
+  private var value: Int = 0
+  
+  def add(elem: Int): Unit = value = elem
+  def get(): Int = value
+}
+
+class StringContainer extends Container {
+  type Element = String
+  
+  private var value: String = ""
+  
+  def add(elem: String): Unit = value = elem
+  def get(): String = value
+}
+
+// Path-dependent type с abstract type members:
+def useContainer(container: Container)(elem: container.Element): Unit = {
+  container.add(elem)
+  println(container.get())
+}
+
+val intC = new IntContainer
+useContainer(intC)(42)  // container.Element = Int
+
+val strC = new StringContainer
+useContainer(strC)("hello")  // container.Element = String
+
+// ❌ Не компилируется:
+// useContainer(intC)("hello")  // Error: type mismatch
+```
+
+**25.5. Cake Pattern (Dependency Injection):**
+
+```scala
+// Компоненты системы
+trait UserRepositoryComponent {
+  val userRepository: UserRepository
+  
+  trait UserRepository {
+    def findById(id: Long): Option[User]
+  }
+}
+
+trait UserServiceComponent {
+  this: UserRepositoryComponent =>  // self-type annotation
+  
+  val userService: UserService
+  
+  trait UserService {
+    def getUser(id: Long): Option[User] = userRepository.findById(id)
+  }
+}
+
+// Конкретные реализации
+trait UserRepositoryComponentImpl extends UserRepositoryComponent {
+  val userRepository = new UserRepositoryImpl
+  
+  class UserRepositoryImpl extends UserRepository {
+    def findById(id: Long): Option[User] = Some(User(id, "Alice"))
+  }
+}
+
+trait UserServiceComponentImpl extends UserServiceComponent {
+  this: UserRepositoryComponent =>
+  
+  val userService = new UserServiceImpl
+  
+  class UserServiceImpl extends UserService
+}
+
+// Сборка приложения
+object Application extends UserServiceComponentImpl 
+                     with UserRepositoryComponentImpl
+
+// Path-dependent types гарантируют корректность связей!
+```
+
+**25.6. Type Refinement:**
+
+```scala
+trait Animal {
+  type Food
+  def eat(food: Food): Unit
+}
+
+class Dog extends Animal {
+  type Food = Bone
+  def eat(food: Bone): Unit = println(s"Eating bone")
+}
+
+class Cat extends Animal {
+  type Food = Fish
+  def eat(food: Fish): Unit = println(s"Eating fish")
+}
+
+case class Bone(size: Int)
+case class Fish(species: String)
+
+// Функция с type refinement
+def feedAnimal(animal: Animal { type Food = Bone })(food: Bone): Unit = {
+  animal.eat(food)
+}
+
+val dog = new Dog
+feedAnimal(dog)(Bone(10))  // ✅ OK
+
+val cat = new Cat
+// feedAnimal(cat)(Fish("salmon"))  // ❌ Error: type mismatch
+```
+
+---
+
+##### 26. Phantom Types (Фантомные типы)
+
+**Определение:**
+
+Phantom type - это type parameter, который не используется в runtime, но помогает обеспечить type safety на этапе компиляции.
+
+**26.1. Базовый пример - Type-safe API:**
+
+```scala
+// Состояния соединения
+sealed trait ConnectionState
+sealed trait Closed extends ConnectionState
+sealed trait Open extends ConnectionState
+
+// Connection с phantom type
+class Connection[State <: ConnectionState] private (handle: String) {
+  def getHandle: String = handle
+}
+
+object Connection {
+  // Можем создать только закрытое соединение
+  def create(handle: String): Connection[Closed] = 
+    new Connection[Closed](handle)
+  
+  // Открыть можно только закрытое соединение
+  def open(conn: Connection[Closed]): Connection[Open] = 
+    new Connection[Open](conn.getHandle)
+  
+  // Закрыть можно только открытое соединение
+  def close(conn: Connection[Open]): Connection[Closed] = 
+    new Connection[Closed](conn.getHandle)
+  
+  // Отправить данные можно только через открытое соединение
+  def send(conn: Connection[Open], data: String): Unit = {
+    println(s"Sending: $data via ${conn.getHandle}")
+  }
+}
+
+// Использование:
+val closed = Connection.create("conn-123")
+val open = Connection.open(closed)
+Connection.send(open, "Hello!")
+val closedAgain = Connection.close(open)
+
+// ❌ Ошибки компиляции:
+// Connection.send(closed, "data")     // Error: требуется Open, а у нас Closed
+// Connection.open(open)                // Error: требуется Closed, а у нас Open
+// Connection.close(closed)             // Error: требуется Open, а у нас Closed
+
+// Type safety без runtime проверок!
+```
+
+**26.2. Пример - Validated Data:**
+
+```scala
+// Состояния валидации
+sealed trait ValidationState
+sealed trait Unvalidated extends ValidationState
+sealed trait Validated extends ValidationState
+
+case class Email[State <: ValidationState](value: String)
+
+object Email {
+  // Создание невалидированного email
+  def apply(value: String): Email[Unvalidated] = 
+    new Email[Unvalidated](value)
+  
+  // Валидация
+  def validate(email: Email[Unvalidated]): Option[Email[Validated]] = {
+    if (email.value.contains("@")) 
+      Some(new Email[Validated](email.value))
+    else 
+      None
+  }
+  
+  // Отправка возможна только для валидированных email
+  def send(email: Email[Validated], message: String): Unit = {
+    println(s"Sending to ${email.value}: $message")
+  }
+}
+
+// Использование:
+val rawEmail = Email("user@example.com")
+Email.validate(rawEmail) match {
+  case Some(validEmail) => Email.send(validEmail, "Hello!")
+  case None => println("Invalid email")
+}
+
+// ❌ Не компилируется:
+// Email.send(rawEmail, "Hello!")  // Error: требуется Validated
+```
+
+**26.3. Пример - Builder Pattern:**
+
+```scala
+// Этапы построения
+sealed trait BuilderState
+sealed trait WithName extends BuilderState
+sealed trait WithAge extends BuilderState
+sealed trait Complete extends BuilderState
+
+class PersonBuilder[State <: BuilderState] private (
+  name: Option[String] = None,
+  age: Option[Int] = None
+)
+
+object PersonBuilder {
+  def apply(): PersonBuilder[BuilderState] = 
+    new PersonBuilder[BuilderState]()
+  
+  implicit class NameOps(builder: PersonBuilder[BuilderState]) {
+    def withName(n: String): PersonBuilder[WithName] = 
+      new PersonBuilder[WithName](Some(n), None)
+  }
+  
+  implicit class AgeOps(builder: PersonBuilder[WithName]) {
+    def withAge(a: Int): PersonBuilder[Complete] = 
+      new PersonBuilder[Complete](builder.name, Some(a))
+  }
+  
+  implicit class BuildOps(builder: PersonBuilder[Complete]) {
+    def build(): Person = Person(builder.name.get, builder.age.get)
+  }
+}
+
+case class Person(name: String, age: Int)
+
+// Использование:
+import PersonBuilder._
+
+val person = PersonBuilder()
+  .withName("Alice")
+  .withAge(30)
+  .build()
+
+// ❌ Не компилируется - нарушен порядок:
+// PersonBuilder().withAge(30)  // Error: нет метода withAge
+// PersonBuilder().withName("Bob").build()  // Error: нет метода build
+```
+
+**26.4. Пример - Units of Measure:**
+
+```scala
+// Единицы измерения
+sealed trait Unit
+sealed trait Meter extends Unit
+sealed trait Kilometer extends Unit
+sealed trait Second extends Unit
+
+case class Quantity[U <: Unit](value: Double) {
+  def +[U2 <: Unit](other: Quantity[U2])(implicit ev: U =:= U2): Quantity[U] = 
+    Quantity[U](value + other.value)
+  
+  def *[U2 <: Unit](other: Quantity[U2]): Quantity[Unit] = 
+    Quantity[Unit](value * other.value)
+}
+
+object Quantity {
+  type Meters = Quantity[Meter]
+  type Kilometers = Quantity[Kilometer]
+  type Seconds = Quantity[Second]
+  
+  implicit class MeterOps(q: Meters) {
+    def toKilometers: Kilometers = Quantity[Kilometer](q.value / 1000)
+  }
+  
+  implicit class KilometerOps(q: Kilometers) {
+    def toMeters: Meters = Quantity[Meter](q.value * 1000)
+  }
+}
+
+import Quantity._
+
+val distance1: Meters = Quantity[Meter](1000)
+val distance2: Meters = Quantity[Meter](500)
+val time: Seconds = Quantity[Second](10)
+
+val totalDistance = distance1 + distance2  // ✅ OK - одинаковые единицы
+val distanceKm = distance1.toKilometers     // ✅ OK - конвертация
+
+// ❌ Не компилируется:
+// val wrong = distance1 + time  // Error: разные единицы измерения
+```
+
+**26.5. Преимущества Phantom Types:**
+
+1. **Compile-time safety** - ошибки обнаруживаются при компиляции
+2. **Zero runtime cost** - phantom types стираются после компиляции
+3. **Self-documenting** - типы описывают состояние и правила
+4. **Refactoring safety** - изменения автоматически проверяются компилятором
+
+---
+
+##### 27. Existential Types (Экзистенциальные типы)
+
+**Определение:**
+
+Existential type - это тип, который говорит "существует некоторый тип, но мы не знаем какой именно". В Scala записывается как `T forSome { type T }` или с использованием wildcards `_`.
+
+**27.1. Базовый синтаксис:**
+
+```scala
+// Полная форма:
+val list1: List[T] forSome { type T } = List(1, 2, 3)
+
+// Сокращенная форма с wildcard:
+val list2: List[_] = List(1, 2, 3)
+
+// Эквивалентно: "список чего-то, но мы не знаем чего"
+```
+
+**27.2. Практический пример - Heterogeneous Collections:**
+
+```scala
+// Без existential types:
+trait Animal {
+  def makeSound(): Unit
+}
+
+class Dog extends Animal {
+  def makeSound(): Unit = println("Woof")
+  def wagTail(): Unit = println("Wagging tail")
+}
+
+class Cat extends Animal {
+  def makeSound(): Unit = println("Meow")
+  def purr(): Unit = println("Purr")
+}
+
+// Гомогенная коллекция (все Animal):
+val animals: List[Animal] = List(new Dog, new Cat)
+animals.foreach(_.makeSound())  // ✅ OK
+
+// Но потеряли специфичные методы:
+// animals.head.wagTail()  // ❌ Error
+
+// С existential types - гетерогенная коллекция:
+trait Box[A] {
+  def get: A
+}
+
+class IntBox(value: Int) extends Box[Int] {
+  def get: Int = value
+}
+
+class StringBox(value: String) extends Box[String] {
+  def get: String = value
+}
+
+// Список Box с неизвестными типами содержимого
+val boxes: List[Box[_]] = List(
+  new IntBox(42),
+  new StringBox("hello")
+)
+
+// Можем работать с Box, но не знаем конкретный тип T
+boxes.foreach { box =>
+  val value: Any = box.get  // Тип потерян, получаем Any
+  println(value)
+}
+```
+
+**27.3. Existential types с Type Members:**
+
+```scala
+trait Processor {
+  type Input
+  type Output
+  
+  def process(input: Input): Output
+}
+
+class IntProcessor extends Processor {
+  type Input = Int
+  type Output = String
+  
+  def process(input: Int): String = input.toString
+}
+
+class StringProcessor extends Processor {
+  type Input = String
+  type Output = Int
+  
+  def process(input: String): Int = input.length
+}
+
+// Список процессоров с неизвестными Input/Output типами
+val processors: List[Processor] = List(
+  new IntProcessor,
+  new StringProcessor
+)
+
+// Эквивалентно:
+val processorsExistential: List[Processor { type Input; type Output }] = processors
+
+// Или:
+type AnyProcessor = Processor forSome { 
+  type Input
+  type Output  
+}
+val processors2: List[AnyProcessor] = processors
+```
+
+**27.4. Bounded Existentials:**
+
+```scala
+// Existential type с ограничениями
+trait Container[A] {
+  def get: A
+}
+
+// "Контейнер чего-то, что является подтипом Number"
+val numericContainers: List[Container[_ <: Number]] = List(
+  new Container[Int] { def get = 42 },
+  new Container[Double] { def get = 3.14 },
+  new Container[java.lang.Long] { def get = 100L }
+)
+
+numericContainers.foreach { container =>
+  val num: Number = container.get  // Мы знаем, что это Number
+  println(num.doubleValue())
+}
+
+// Lower bound:
+trait Producer[A] {
+  def produce(): A
+}
+
+// "Производитель чего-то, что является супертипом String"
+val stringProducers: List[Producer[_ >: String]] = List(
+  new Producer[String] { def produce() = "hello" },
+  new Producer[CharSequence] { def produce() = "world" },
+  new Producer[Any] { def produce() = 42 }
+)
+```
+
+**27.5. Захват экзистенциальных типов:**
+
+```scala
+// Проблема: тип стирается
+def printFirst(list: List[_]): Unit = {
+  if (list.nonEmpty) {
+    val first: Any = list.head  // Потеряли информацию о типе
+    println(first)
+  }
+}
+
+// Решение: использовать полиморфизм
+def printFirstPoly[A](list: List[A]): Unit = {
+  if (list.nonEmpty) {
+    val first: A = list.head  // Сохранили тип
+    println(first)
+  }
+}
+
+// Или использовать pattern matching для "захвата" типа:
+def processBox(box: Box[_]): Unit = box match {
+  case b: Box[t] => // Захватили экзистенциальный тип как 't'
+    val value: t = b.get
+    println(s"Value: $value")
+}
+```
+
+**27.6. Java Interop:**
+
+```scala
+// Java generic wildcards становятся existential types в Scala
+
+// Java: List<?> → Scala: List[_]
+import java.util.{List => JList}
+
+def processJavaList(list: JList[_]): Unit = {
+  val size: Int = list.size()
+  println(s"List size: $size")
+}
+
+// Java: List<? extends Number> → Scala: List[_ <: Number]
+def sumJavaNumbers(list: JList[_ <: Number]): Double = {
+  import scala.jdk.CollectionConverters._
+  list.asScala.map(_.doubleValue()).sum
+}
+
+// Java: List<? super Integer> → Scala: List[_ >: Integer]
+def addInteger(list: JList[_ >: Integer]): Unit = {
+  list.add(42)
+}
+```
+
+**27.7. Когда использовать Existential Types:**
+
+```scala
+// ✅ Хорошее использование:
+
+// 1. Java interop
+def processJavaCollection(coll: java.util.Collection[_]): Int = coll.size()
+
+// 2. Хранение гетерогенных данных
+val cache: Map[String, Box[_]] = Map(
+  "int" -> new IntBox(42),
+  "string" -> new StringBox("hello")
+)
+
+// 3. API с неизвестными типами
+trait Repository {
+  type Entity
+  def findAll(): List[Entity]
+}
+
+def countEntities(repo: Repository): Int = repo.findAll().size
+
+// ❌ Плохое использование:
+
+// Вместо existential лучше использовать полиморфизм:
+// Плохо:
+def processList(list: List[_]): Unit = ???
+
+// Хорошо:
+def processList[A](list: List[A]): Unit = ???
+```
+
+**27.8. Deprecation в Scala 3:**
+
+⚠️ **Важно**: Existential types объявлены deprecated в Scala 3 и заменены на:
+- Wildcard types (`_`)
+- Match types
+- Opaque types
+
+```scala
+// Scala 2:
+def foo: List[T] forSome { type T <: Animal }
+
+// Scala 3:
+def foo: List[_ <: Animal]  // Используйте wildcard
+```
+
+---
 
 **Практика:**
 
