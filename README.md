@@ -3562,9 +3562,39 @@ def fetchUserMonad(id: Int): Option[User] =
 
 **11.4. Монада (Monad)**
 
+**Математическое определение:** Монада в категории C - это тройка (T, η, μ) где:
+- T: C → C - эндофунктор
+- η: Id → T - натуральное преобразование (unit/pure)
+- μ: T∘T → T - натуральное преобразование (join/flatten)
+
+**Диаграмма монады:**
+```
+       T(T(T(X)))
+         /    \
+    T(μ_X)    μ_T(X)
+       /        \
+   T(T(X))     T(T(X))
+        \      /
+         μ_X
+          |
+         T(X)
+```
+
 **Определение:**
 
 Монада - это аппликативный функтор с операцией `flatMap` (или `bind`), которая позволяет последовательно комбинировать вычисления в контексте.
+
+**Законы монады:**
+```scala
+// 1. Левая идентичность: pure(a).flatMap(f) == f(a)
+pure(42).flatMap(x => Some(x + 1)) == Some(43)
+
+// 2. Правая идентичность: m.flatMap(pure) == m
+Some(42).flatMap(x => pure(x)) == Some(42)
+
+// 3. Ассоциативность: m.flatMap(f).flatMap(g) == m.flatMap(x => f(x).flatMap(g))
+Some(42).flatMap(f).flatMap(g) == Some(42).flatMap(x => f(x).flatMap(g))
+```
 
 **Trait Monad:**
 ```scala
