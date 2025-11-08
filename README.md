@@ -16,77 +16,77 @@
 
 **📖 Теоретические материалы:**
 
-1. [Collections (List, Map, Set, Vector, Array, Seq)](#1-collections-list-map-set-vector-array)
-   - [List - неизменяемый связный список](#list---неизменяемый-связный-список)
-   - [Vector - индексированная последовательность](#vector---индексированная-последовательность)
-   - [Array - изменяемый массив](#array---изменяемый-массив)
-   - [Set - уникальные элементы](#set---уникальные-элементы)
-   - [Map - пары ключ-значение](#map---пары-ключ-значение)
-   - [Seq - абстрактная последовательность](#seq---абстрактная-последовательность)
-   - [Seq vs List - ключевые отличия](#seq-vs-list---ключевые-отличия)
-   - [Иерархия коллекций](#иерархия-коллекций)
+1. [Collections (List, Map, Set, Vector, Array, Seq)](#1-collections-list-map-set-vector-array-seq)
+   - List - неизменяемый связный список
+   - Vector - индексированная последовательность
+   - Array - изменяемый массив
+   - Set - уникальные элементы
+   - Map - пары ключ-значение
+   - Seq - абстрактная последовательность
+   - Seq vs List - ключевые отличия
+   - Иерархия коллекций
 
 2. [Immutability vs Mutability](#2-immutability-vs-mutability)
-   - [Преимущества immutability](#преимущества-immutability)
-   - [Когда использовать mutable](#когда-использовать-mutable)
-   - [Best practices](#best-practices)
+   - Преимущества immutability
+   - Когда использовать mutable
+   - Best practices
 
 3. [Class, Object, Trait, Sealed Trait](#3-class-object-trait-sealed-trait)
-   - [Class - обычный класс](#class---обычный-класс)
-   - [Object - singleton](#object---singleton)
-   - [Trait - интерфейс с реализацией](#trait---интерфейс-с-реализацией)
-   - [Sealed Trait - закрытая иерархия](#sealed-trait---закрытая-иерархия)
-   - [Сравнительная таблица](#сравнительная-таблица)
-   - [Когда использовать](#когда-использовать)
+   - Class - обычный класс
+   - Object - singleton
+   - Trait - интерфейс с реализацией
+   - Sealed Trait - закрытая иерархия
+   - Сравнительная таблица
+   - Когда использовать
 
 4. [Case Classes vs Classes](#4-case-classes-vs-classes)
-   - [Structural Equality vs Referential Equality](#41-structural-equality-vs-referential-equality)
-   - [Определения и различия](#определения-и-различия)
-   - [Переопределение equals и hashCode](#переопределение-equals-и-hashcode)
-   - [Контракт equals/hashCode](#контракт-equalshashcode)
-   - [Проблемы в коллекциях](#проблемы-в-коллекциях)
-   - [Best practices](#best-practices-1)
+   - [4.1. Structural Equality vs Referential Equality](#41-structural-equality-vs-referential-equality)
+   - Определения и различия
+   - Переопределение equals и hashCode
+   - Контракт equals/hashCode
+   - Проблемы в коллекциях
+   - Best practices
 
 5. [Pattern Matching](#5-pattern-matching)
-   - [Базовое pattern matching](#базовое-pattern-matching)
-   - [Exhaustiveness checking](#exhaustiveness-checking)
-   - [Guards (условия)](#guards-условия)
-   - [Extractors (unapply)](#extractors-unapply)
-   - [Nested pattern matching](#nested-pattern-matching)
+   - Базовое pattern matching
+   - Exhaustiveness checking
+   - Guards (условия)
+   - Extractors (unapply)
+   - Nested pattern matching
 
 6. [For-Comprehensions](#6-for-comprehensions)
-   - [Синтаксический сахар](#синтаксический-сахар)
-   - [Правила трансформации](#правила-трансформации)
-   - [С Option, Either, Future](#с-option-either-future)
+   - Синтаксический сахар
+   - Правила трансформации
+   - С Option, Either, Future
 
 7. [Implicit и Implicit Resolution](#7-implicit-и-implicit-resolution)
-   - [7.1. Implicit Values](#71-implicit-values-неявные-значения)
-   - [7.2. Implicit Resolution](#72-implicit-resolution-разрешение-неявных-значений)
-   - [7.3. Generic Types](#73-implicit-resolution-для-generic-types)
-   - [7.4. Context Bounds](#74-context-bounds-контекстные-границы)
-   - [7.5. Implicit Scope](#75-implicit-scope-область-видимости)
-   - [7.6. Приоритет Resolution](#76-приоритет-implicit-resolution)
-   - [7.7. Debugging](#77-debugging-implicit-resolution)
-   - [7.8. Best Practices](#78-best-practices-для-implicit)
-   - [7.9. Практические паттерны](#79-практические-паттерны)
+   - [7.1. Implicit Values (Неявные значения)](#71-implicit-values-неявные-значения)
+   - [7.2. Implicit Parameters](#72-implicit-parameters)
+   - [7.3. Implicit Resolution - правила поиска](#73-implicit-resolution---правила-поиска)
+   - [7.4. Implicit Resolution - детальные правила](#74-implicit-resolution---детальные-правила)
+   - [7.5. Implicit Scope и Package Objects](#75-implicit-scope-и-package-objects)
+   - [7.6. Implicit Priority (приоритеты наследованием)](#76-implicit-priority-приоритеты-наследованием)
+   - [7.7. Debugging Implicit Resolution](#77-debugging-implicit-resolution)
+   - [7.8. Best Practices для Implicit](#78-best-practices-для-implicit)
+   - [7.9. Практические примеры](#79-практические-примеры)
 
 8. [Implicit Conversions и Implicit Parameters](#8-implicit-conversions-и-implicit-parameters)
-   - [Implicit conversions](#implicit-conversions)
-   - [Implicit parameters](#implicit-parameters)
-   - [Implicit resolution rules](#implicit-resolution-rules)
-   - [Type Class pattern](#type-class-pattern)
+   - Implicit conversions
+   - Implicit parameters
+   - Implicit resolution rules
+   - Type Class pattern
 
 9. [Type Inference и Type Annotations](#9-type-inference-и-type-annotations)
-   - [Вывод типов](#вывод-типов)
-   - [Когда нужны аннотации](#когда-нужны-аннотации)
-   - [Type ascription](#type-ascription)
-   - [Best practices](#best-practices-2)
+   - Вывод типов
+   - Когда нужны аннотации
+   - Type ascription
+   - Best practices
 
 10. [Функции apply и unapply](#10-функции-apply-и-unapply)
-    - [Apply - вызов объектов как функций](#apply---вызов-объектов-как-функций)
-    - [Unapply - экстракторы](#unapply---экстракторы)
-    - [Типы unapply](#типы-unapply)
-    - [Симметрия apply/unapply](#симметрия-applyunapply)
+    - Apply - вызов объектов как функций
+    - Unapply - экстракторы
+    - Типы unapply
+    - Симметрия apply/unapply
 
 11. [val, var, def, lazy val](#11-val-var-def-lazy-val---способы-определения-значений)
     - [11.1. val - Immutable значение](#111-val---immutable-значение-с-eager-evaluation)
@@ -344,7 +344,7 @@
 
 ---
 
-##### 1. Collections (List, Map, Set, Vector, Array)
+##### 1. Collections (List, Map, Set, Vector, Array, Seq)
 
 **List - неизменяемый связный список:**
 ```scala
@@ -1897,7 +1897,7 @@ Implicit - это механизм Scala, который позволяет ко
 
 ---
 
-**7.1. Implicit Values**
+###### 7.1. Implicit Values (Неявные значения)
 
 **Базовый синтаксис:**
 ```scala
@@ -1963,7 +1963,7 @@ def process[A, B](value: A)(implicit
 
 ---
 
-**7.2. Implicit Parameters**
+###### 7.2. Implicit Parameters
 
 **Context Bounds - синтаксический сахар:**
 ```scala
@@ -2014,7 +2014,7 @@ hasOrdering[String]  // true
 
 ---
 
-**7.3. Implicit Resolution - правила поиска**
+###### 7.3. Implicit Resolution - правила поиска
 
 **Порядок поиска implicit (приоритет от высокого к низкому):**
 
@@ -2129,7 +2129,7 @@ encode(Person("Alice", 30))   // находит Person.personCodec
 
 ---
 
-**7.4. Implicit Resolution - детальные правила**
+###### 7.4. Implicit Resolution - детальные правила
 
 **Правило 1: Специфичность (Specificity)**
 
@@ -2213,7 +2213,7 @@ object Implicits extends LowPriorityImplicits {
 
 ---
 
-**7.5. Implicit Scope и Package Objects**
+###### 7.5. Implicit Scope и Package Objects
 
 **Package objects для implicit значений:**
 
@@ -2260,7 +2260,7 @@ import DatabaseCodecs.userCodec  // или только конкретный
 
 ---
 
-**7.6. Implicit Priority (приоритеты наследованием)**
+###### 7.6. Implicit Priority (приоритеты наследованием)
 
 **Паттерн Low Priority Implicits:**
 
@@ -2322,7 +2322,7 @@ object Converter extends MediumPriorityImplicits {
 
 ---
 
-**7.7. Debugging Implicit Resolution**
+###### 7.7. Debugging Implicit Resolution
 
 **Compiler options для отладки:**
 
@@ -2406,7 +2406,7 @@ def showImplicit[A: TypeTag](implicit a: A): Unit = {
 
 ---
 
-**7.8. Best Practices для Implicit**
+###### 7.8. Best Practices для Implicit
 
 **✅ Хорошие практики:**
 
@@ -2526,7 +2526,7 @@ def process(config: ProcessConfig): Unit = ???
 
 ---
 
-**7.9. Практические примеры**
+###### 7.9. Практические примеры
 
 **Пример 1: ExecutionContext для Future**
 
@@ -3324,7 +3324,7 @@ order match {
 
 ---
 
-**11.1. val - Immutable значение с eager evaluation**
+###### 11.1. val - Immutable значение с eager evaluation
 
 ```scala
 val x = 42
@@ -3370,7 +3370,7 @@ val doubled = numbers.map(_ * 2)
 
 ---
 
-**11.2. var - Mutable переменная с eager evaluation**
+###### 11.2. var - Mutable переменная с eager evaluation
 
 ```scala
 var x = 42
@@ -3450,7 +3450,7 @@ val result = list.map(_ * 2)
 
 ---
 
-**11.3. def - Метод с by-name evaluation**
+###### 11.3. def - Метод с by-name evaluation
 
 ```scala
 def x = 42
@@ -3549,7 +3549,7 @@ println(ex.lazyValue)  // 42, ничего не печатает
 
 ---
 
-**11.4. lazy val - Ленивое immutable значение**
+###### 11.4. lazy val - Ленивое immutable значение
 
 ```scala
 lazy val x = 42
@@ -3647,7 +3647,7 @@ resource.lazyField
 
 ---
 
-**11.5. Сравнение производительности**
+###### 11.5. Сравнение производительности
 
 ```scala
 import scala.concurrent.duration._
@@ -3692,7 +3692,7 @@ benchmark("Second access") {
 
 ---
 
-**11.6. Правила выбора**
+###### 11.6. Правила выбора
 
 ```scala
 // Используйте val по умолчанию
@@ -3776,7 +3776,7 @@ class Invariant[A]       // инвариантный (по умолчанию)
 
 ---
 
-**12.1. Invariance (Инвариантность) - по умолчанию**
+###### 12.1. Invariance (Инвариантность) - по умолчанию
 
 ```scala
 class Box[A](val value: A)
@@ -3832,7 +3832,7 @@ class Array[A] {  // В Scala Array инвариантен (в отличие о
 
 ---
 
-**12.2. Covariance (Ковариантность) - +A**
+###### 12.2. Covariance (Ковариантность) - +A
 
 ```scala
 class ReadOnlyBox[+A](private val value: A) {
@@ -3948,7 +3948,7 @@ val newList = dogList.prepend(new Cat())  // B = Animal
 
 ---
 
-**12.3. Contravariance (Контравариантность) - -A**
+###### 12.3. Contravariance (Контравариантность) - -A
 
 ```scala
 trait Printer[-A] {
@@ -4053,7 +4053,7 @@ serializeDogs(List(Dog("Rex")), animalWriter)  // ✅ OK
 
 ---
 
-**12.4. Сочетание Variance**
+###### 12.4. Сочетание Variance
 
 ```scala
 // Function1 использует оба вида variance
@@ -4097,7 +4097,7 @@ dogs.sorted  // ✅ Использует Ordering[Animal] для List[Dog]
 
 ---
 
-**12.5. Правила безопасности variance**
+###### 12.5. Правила безопасности variance
 
 **Liskov Substitution Principle (LSP):**
 
@@ -4143,7 +4143,7 @@ val dog: Dog = dogs(0)  // Теперь здесь Cat!
 
 ---
 
-**12.6. Когда использовать какую variance**
+###### 12.6. Когда использовать какую variance
 
 **Используйте Covariance (+A) когда:**
 ```scala
@@ -4259,7 +4259,7 @@ trait Stack[+A] {
 
 ---
 
-**13.1. Категория (Category)**
+###### 13.1. Категория (Category)
 
 **Определение категории:**
 
@@ -4340,7 +4340,7 @@ object ScalaCategory {
 
 ---
 
-**13.2. Функтор (Functor)**
+###### 13.2. Функтор (Functor)
 
 **Математическое определение функтора:**
 
@@ -4660,7 +4660,7 @@ doubleInContext(Box(21))       // Box(42)
 
 ---
 
-**13.3. Аппликативный функтор (Applicative)**
+###### 13.3. Аппликативный функтор (Applicative)
 
 **Определение:**
 
@@ -4747,7 +4747,7 @@ createUser("", 30, "alice@example.com")       // None
 
 ---
 
-**13.4. Монада (Monad)**
+###### 13.4. Монада (Monad)
 
 **Математическое определение:** Монада в категории C - это тройка (T, η, μ) где:
 - T: C → C - эндофунктор
@@ -4944,7 +4944,7 @@ yield y.total
 
 ---
 
-**13.5. Natural Transformation (Естественное преобразование)**
+###### 13.5. Natural Transformation (Естественное преобразование)
 
 **Определение 1:** 
 Натуральное преобразование η между функторами F и G - это семейство морфизмов:
@@ -5020,7 +5020,7 @@ val tryToEither: Try ~> Either[Throwable, *] =
 
 ---
 
-**13.6. Monoid (Моноид)**
+###### 13.6. Monoid (Моноид)
 
 **Математическое определение:** Моноид - это алгебраическая структура (M, •, e) где:
 - M - множество
@@ -5156,7 +5156,7 @@ val totalCount = texts.map(countWords).foldLeft(wordCountMonoid.empty)(wordCount
 
 ---
 
-**13.7. Semigroup (Полугруппа)**
+###### 13.7. Semigroup (Полугруппа)
 
 **Определение:**
 
@@ -5201,7 +5201,7 @@ def minSemigroup[A: Ordering]: Semigroup[A] = new Semigroup[A] {
 
 ---
 
-**13.8. Связь концепций - диаграмма иерархии**
+###### 13.8. Связь концепций - диаграмма иерархии
 
 ```
 Semigroup
@@ -5262,7 +5262,7 @@ Higher-order function (функция высшего порядка) - это ф
 1. Принимает другие функции как параметры, ИЛИ
 2. Возвращает функцию как результат
 
-**14.1. Функции как параметры**
+###### 14.1. Функции как параметры
 
 ```scala
 // Функция, принимающая другую функцию
@@ -5282,7 +5282,7 @@ repeat(3) {
 // Напечатает "Hello!" три раза
 ```
 
-**14.2. map - преобразование элементов**
+###### 14.2. map - преобразование элементов
 
 ```scala
 // Сигнатура: def map[B](f: A => B): List[B]
@@ -5327,7 +5327,7 @@ Empty.map(_ * 2)       // Empty
 
 ---
 
-**14.3. flatMap - преобразование с "распаковкой"**
+###### 14.3. flatMap - преобразование с "распаковкой"
 
 ```scala
 // Сигнатура: def flatMap[B](f: A => F[B]): F[B]
@@ -5396,7 +5396,7 @@ val result2: Option[Double] = for {
 
 ---
 
-**14.4. fold и reduce - агрегация**
+###### 14.4. fold и reduce - агрегация
 
 **fold - свертка с начальным значением:**
 
@@ -5488,7 +5488,7 @@ List(1, 2, 3).reduceRight(_ - _)  // 1 - (2 - 3) = 2
 
 ---
 
-**14.5. Другие полезные higher-order functions**
+###### 14.5. Другие полезные higher-order functions
 
 ```scala
 val numbers = List(1, 2, 3, 4, 5)
@@ -5541,7 +5541,7 @@ numbers.span(_ < 4)  // (List(1, 2, 3), List(4, 5))
 
 Композиция функций - это создание новой функции путем последовательного применения других функций.
 
-**15.1. andThen - применение слева направо**
+###### 15.1. andThen - применение слева направо
 
 ```scala
 val f: Int => Int = _ * 2      // умножить на 2
@@ -5555,7 +5555,7 @@ h(21)  // f(21) = 42, g(42) = "42"
 val h2 = (x: Int) => g(f(x))
 ```
 
-**15.2. compose - применение справа налево**
+###### 15.2. compose - применение справа налево
 
 ```scala
 val f: Int => Int = _ * 2
@@ -5659,7 +5659,7 @@ val processData2 = trim _ andThen toLower andThen capitalize
 
 ##### 16. Currying и Partial Application
 
-**16.1. Currying - преобразование функции**
+###### 16.1. Currying - преобразование функции
 
 **Определение:**
 
@@ -5730,7 +5730,7 @@ val devConn = devConnection(5000)
 
 ---
 
-**16.2. Partial Application - частичное применение**
+###### 16.2. Partial Application - частичное применение
 
 **Определение:**
 
@@ -5823,7 +5823,7 @@ val addCurried2And3 = addCurried(2)(3)  // Int
 1. `pure` (или `apply`) - помещает значение в контекст
 2. `flatMap` - позволяет последовательно композировать вычисления
 
-**17.1. Option - монада для опциональных значений**
+###### 17.1. Option - монада для опциональных значений
 
 ```scala
 // Option представляет значение, которое может отсутствовать
@@ -5850,7 +5850,7 @@ val result2 = for {
 // None
 ```
 
-**17.2. Either - монада для обработки ошибок**
+###### 17.2. Either - монада для обработки ошибок
 
 ```scala
 // Either[A, B] - либо Left(A) с ошибкой, либо Right(B) с результатом
@@ -5880,7 +5880,7 @@ val failed = for {
 // Left("Division by zero")
 ```
 
-**17.3. Try - монада для обработки исключений**
+###### 17.3. Try - монада для обработки исключений
 
 ```scala
 import scala.util.{Try, Success, Failure}
@@ -5911,7 +5911,7 @@ result match {
 }
 ```
 
-**17.4. Future - монада для асинхронных вычислений**
+###### 17.4. Future - монада для асинхронных вычислений
 
 ```scala
 import scala.concurrent.{Future, ExecutionContext}
@@ -6002,7 +6002,7 @@ List(1, 2, 3)
 
 ##### 19. Recursion vs Tail Recursion
 
-**19.1. Обычная рекурсия**
+###### 19.1. Обычная рекурсия
 
 ```scala
 // НЕ tail-recursive
@@ -6024,7 +6024,7 @@ factorial(5)     // 120
 
 **Проблема:** Каждый рекурсивный вызов добавляет новый stack frame. Для больших n - переполнение стека.
 
-**19.2. Tail Recursion (хвостовая рекурсия)**
+###### 19.2. Tail Recursion (хвостовая рекурсия)
 
 ```scala
 // Tail-recursive - рекурсивный вызов в последней позиции
@@ -6117,7 +6117,7 @@ def isOdd(n: Int): Boolean =
 
 ##### 20. Lazy Evaluation (Stream/LazyList)
 
-**20.1. Lazy evaluation - что это?**
+###### 20.1. Lazy evaluation - что это?
 
 ```scala
 // Eager evaluation - вычисляется сразу
@@ -6143,7 +6143,7 @@ lazyList.take(2).toList
 // Computing 2
 ```
 
-**20.2. LazyList (ранее Stream в Scala 2.12)**
+###### 20.2. LazyList (ранее Stream в Scala 2.12)
 
 ```scala
 // Создание LazyList
@@ -6171,7 +6171,7 @@ primes.take(10).toList
 // List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
 ```
 
-**20.3. Преимущества lazy evaluation**
+###### 20.3. Преимущества lazy evaluation
 
 ```scala
 // 1. Работа с бесконечными структурами
@@ -6201,7 +6201,7 @@ val found = LazyList.from(1).find(_ > 1000000)
 // Останавливается как только нашли первый элемент
 ```
 
-**20.4. View - lazy обертка над коллекциями**
+###### 20.4. View - lazy обертка над коллекциями
 
 ```scala
 val numbers = (1 to 1000000).toList
@@ -6225,7 +6225,7 @@ val result2 = numbers.view
 // и может остановиться раньше (take(10))
 ```
 
-**20.5. Memoization в LazyList**
+###### 20.5. Memoization в LazyList
 
 ```scala
 // LazyList кеширует вычисленные элементы
@@ -6467,7 +6467,7 @@ type StringOr[A] = Either[String, A]  // старый способ
 
 ##### 22. Type Bounds (Границы типов)
 
-**22.1. Upper Type Bound (верхняя граница) - <:**
+###### 22.1. Upper Type Bound (верхняя граница) - <:
 
 Означает: "тип должен быть подтипом указанного типа"
 
@@ -6529,7 +6529,7 @@ class AdvancedZoo[A <: Animal : Ordering](animals: List[A]) {
 }
 ```
 
-**22.2. Lower Type Bound (нижняя граница) - >:**
+###### 22.2. Lower Type Bound (нижняя граница) - >:
 
 Означает: "тип должен быть супертипом указанного типа"
 
@@ -6574,7 +6574,7 @@ val dogs: List[Dog] = List(new Dog)
 val animals: List[Animal] = new Cat :: dogs  // ✅ OK
 ```
 
-**22.3. Сочетание Upper и Lower bounds:**
+###### 22.3. Сочетание Upper и Lower bounds:
 
 ```scala
 class Container[A] {
@@ -6595,7 +6595,7 @@ sealed trait MyOption[+A] {
 }
 ```
 
-**22.4. View Bounds (устаревшие в Scala 2.13+):**
+###### 22.4. View Bounds (устаревшие в Scala 2.13+):
 
 ```scala
 // Старый синтаксис (deprecated):
@@ -6619,7 +6619,7 @@ def printSorted[A](list: List[A])(implicit ord: Ordering[A]): Unit =
 
 Type class - это паттерн, позволяющий добавлять новую функциональность к существующим типам без изменения их исходного кода. Это форма ad-hoc полиморфизма.
 
-**23.1. Проблема, которую решают type classes:**
+###### 23.1. Проблема, которую решают type classes:
 
 ```scala
 // Представим, у нас есть разные типы:
@@ -6642,7 +6642,7 @@ case class User(name: String, age: Int) extends JsonSerializable {
 // 3. Один класс = один способ сериализации
 ```
 
-**23.2. Решение с Type Classes:**
+###### 23.2. Решение с Type Classes:
 
 ```scala
 // Шаг 1: Определяем type class
@@ -6686,7 +6686,7 @@ toJson(User("Alice", 30))         // {"name": "Alice", "age": 30}
 toJson(List(1, 2, 3))             // [1, 2, 3]
 ```
 
-**23.3. Улучшенный синтаксис (Interface Syntax):**
+###### 23.3. Улучшенный синтаксис (Interface Syntax):
 
 ```scala
 // Добавим вспомогательные методы
@@ -6714,7 +6714,7 @@ User("Bob", 25).toJson            // {"name": "Bob", "age": 25}
 List(1, 2, 3).toJson              // [1, 2, 3]
 ```
 
-**23.4. Type Class Laws (законы):**
+###### 23.4. Type Class Laws (законы):
 
 Многие type classes имеют законы, которым должны следовать instances:
 
@@ -6746,7 +6746,7 @@ implicit val stringMonoid: Monoid[String] = new Monoid[String] {
 }
 ```
 
-**23.5. Стандартные Type Classes:**
+###### 23.5. Стандартные Type Classes:
 
 ```scala
 // Ordering - упорядочивание
@@ -6777,7 +6777,7 @@ Person("Alice", 30) === Person("Alice", 30)  // true
 Person("Alice", 30) =!= Person("Bob", 25)    // true
 ```
 
-**23.6. Type Classes vs Inheritance:**
+###### 23.6. Type Classes vs Inheritance:
 
 ```scala
 // ООП подход (наследование):
@@ -6820,7 +6820,7 @@ implicit val verboseUserPrinter: Printer[User] =
 
 Context bound - это синтаксический сахар для implicit параметров с type classes.
 
-**24.1. Базовый синтаксис:**
+###### 24.1. Базовый синтаксис:
 
 ```scala
 // Полная форма с implicit параметром:
@@ -6836,7 +6836,7 @@ def show[A: Show](value: A): String =
   Show[A].show(value)  // если есть def apply[A](implicit ev: Show[A])
 ```
 
-**24.2. Множественные context bounds:**
+###### 24.2. Множественные context bounds:
 
 ```scala
 // Несколько type classes
@@ -6858,7 +6858,7 @@ def processData[A](list: List[A])(
 }
 ```
 
-**24.3. Context bounds с Higher-Kinded Types:**
+###### 24.3. Context bounds с Higher-Kinded Types:
 
 ```scala
 // F[_] с context bound
@@ -6874,7 +6874,7 @@ sequence(List(Some(1), Some(2), Some(3)))  // Some(List(1, 2, 3))
 sequence(List(Right(1), Right(2)))         // Right(List(1, 2))
 ```
 
-**24.4. Доступ к implicit instance:**
+###### 24.4. Доступ к implicit instance:
 
 ```scala
 // Способ 1: implicitly
@@ -6904,7 +6904,7 @@ def method3[A: Ordering](list: List[A]): List[A] = {
 }
 ```
 
-**24.5. Context bounds в классах:**
+###### 24.5. Context bounds в классах:
 
 ```scala
 // В классах context bounds работают так же
@@ -6928,7 +6928,7 @@ intContainer.sorted   // List(1, 1, 3, 4, 5)
 intContainer.max      // 5
 ```
 
-**24.6. Практический пример - Generic сортировка:**
+###### 24.6. Практический пример - Generic сортировка:
 
 ```scala
 case class Person(name: String, age: Int)
@@ -6968,7 +6968,7 @@ def sortAndPrint[A: Ordering : Show](items: List[A]): Unit = {
 
 Path-dependent type - это тип, который зависит от конкретного экземпляра (пути к значению), а не только от класса.
 
-**25.1. Базовый пример:**
+###### 25.1. Базовый пример:
 
 ```scala
 class Outer {
@@ -6994,7 +6994,7 @@ val inner2: outer2.Inner = outer2.createInner()
 // Error: type mismatch
 ```
 
-**25.2. Практический пример - Graph:**
+###### 25.2. Практический пример - Graph:
 
 ```scala
 class Graph {
@@ -7025,7 +7025,7 @@ val edge1: graph1.Edge = node1a.connectTo(node1b)
 // Это type safety на уровне компилятора!
 ```
 
-**25.3. Type Projection - # (hash):**
+###### 25.3. Type Projection - # (hash):
 
 Иногда нужно абстрагироваться от конкретного пути:
 
@@ -7054,7 +7054,7 @@ processAnyTable(table1)  // ✅ OK
 processAnyTable(table2)  // ✅ OK
 ```
 
-**25.4. Abstract Type Members:**
+###### 25.4. Abstract Type Members:
 
 ```scala
 trait Container {
@@ -7098,7 +7098,7 @@ useContainer(strC)("hello")  // container.Element = String
 // useContainer(intC)("hello")  // Error: type mismatch
 ```
 
-**25.5. Cake Pattern (Dependency Injection):**
+###### 25.5. Cake Pattern (Dependency Injection):
 
 ```scala
 // Компоненты системы
@@ -7144,7 +7144,7 @@ object Application extends UserServiceComponentImpl
 // Path-dependent types гарантируют корректность связей!
 ```
 
-**25.6. Type Refinement:**
+###### 25.6. Type Refinement:
 
 ```scala
 trait Animal {
@@ -7185,7 +7185,7 @@ val cat = new Cat
 
 Phantom type - это type parameter, который не используется в runtime, но помогает обеспечить type safety на этапе компиляции.
 
-**26.1. Базовый пример - Type-safe API:**
+###### 26.1. Базовый пример - Type-safe API:
 
 ```scala
 // Состояния соединения
@@ -7231,7 +7231,7 @@ val closedAgain = Connection.close(open)
 // Type safety без runtime проверок!
 ```
 
-**26.2. Пример - Validated Data:**
+###### 26.2. Пример - Validated Data:
 
 ```scala
 // Состояния валидации
@@ -7271,7 +7271,7 @@ Email.validate(rawEmail) match {
 // Email.send(rawEmail, "Hello!")  // Error: требуется Validated
 ```
 
-**26.3. Пример - Builder Pattern:**
+###### 26.3. Пример - Builder Pattern:
 
 ```scala
 // Этапы построения
@@ -7319,7 +7319,7 @@ val person = PersonBuilder()
 // PersonBuilder().withName("Bob").build()  // Error: нет метода build
 ```
 
-**26.4. Пример - Units of Measure:**
+###### 26.4. Пример - Units of Measure:
 
 ```scala
 // Единицы измерения
@@ -7363,7 +7363,7 @@ val distanceKm = distance1.toKilometers     // ✅ OK - конвертация
 // val wrong = distance1 + time  // Error: разные единицы измерения
 ```
 
-**26.5. Преимущества Phantom Types:**
+###### 26.5. Преимущества Phantom Types:
 
 1. **Compile-time safety** - ошибки обнаруживаются при компиляции
 2. **Zero runtime cost** - phantom types стираются после компиляции
@@ -7378,7 +7378,7 @@ val distanceKm = distance1.toKilometers     // ✅ OK - конвертация
 
 Existential type - это тип, который говорит "существует некоторый тип, но мы не знаем какой именно". В Scala записывается как `T forSome { type T }` или с использованием wildcards `_`.
 
-**27.1. Базовый синтаксис:**
+###### 27.1. Базовый синтаксис:
 
 ```scala
 // Полная форма:
@@ -7390,7 +7390,7 @@ val list2: List[_] = List(1, 2, 3)
 // Эквивалентно: "список чего-то, но мы не знаем чего"
 ```
 
-**27.2. Практический пример - Heterogeneous Collections:**
+###### 27.2. Практический пример - Heterogeneous Collections:
 
 ```scala
 // Без existential types:
@@ -7441,7 +7441,7 @@ boxes.foreach { box =>
 }
 ```
 
-**27.3. Existential types с Type Members:**
+###### 27.3. Existential types с Type Members:
 
 ```scala
 trait Processor {
@@ -7482,7 +7482,7 @@ type AnyProcessor = Processor forSome {
 val processors2: List[AnyProcessor] = processors
 ```
 
-**27.4. Bounded Existentials:**
+###### 27.4. Bounded Existentials:
 
 ```scala
 // Existential type с ограничениями
@@ -7515,7 +7515,7 @@ val stringProducers: List[Producer[_ >: String]] = List(
 )
 ```
 
-**27.5. Захват экзистенциальных типов:**
+###### 27.5. Захват экзистенциальных типов:
 
 ```scala
 // Проблема: тип стирается
@@ -7542,7 +7542,7 @@ def processBox(box: Box[_]): Unit = box match {
 }
 ```
 
-**27.6. Java Interop:**
+###### 27.6. Java Interop:
 
 ```scala
 // Java generic wildcards становятся existential types в Scala
@@ -7567,7 +7567,7 @@ def addInteger(list: JList[_ >: Integer]): Unit = {
 }
 ```
 
-**27.7. Когда использовать Existential Types:**
+###### 27.7. Когда использовать Existential Types:
 
 ```scala
 // ✅ Хорошее использование:
@@ -7599,7 +7599,7 @@ def processList(list: List[_]): Unit = ???
 def processList[A](list: List[A]): Unit = ???
 ```
 
-**27.8. Deprecation в Scala 3:**
+###### 27.8. Deprecation в Scala 3:
 
 ⚠️ **Важно**: Existential types объявлены deprecated в Scala 3 и заменены на:
 - Wildcard types (`_`)
