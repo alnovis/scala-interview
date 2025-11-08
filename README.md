@@ -13,62 +13,272 @@
 ### [🎯 Неделя 1: Основы Scala](#-неделя-1-основы-scala)
 
 #### [День 1-2: Базовый синтаксис и концепции](#день-1-2-базовый-синтаксис-и-концепции)
-1. [Collections (List, Map, Set, Vector, Array)](#1-collections-list-map-set-vector-array)
+
+**📖 Теоретические материалы:**
+
+1. [Collections (List, Map, Set, Vector, Array, Seq)](#1-collections-list-map-set-vector-array)
+   - [List - неизменяемый связный список](#list---неизменяемый-связный-список)
+   - [Vector - индексированная последовательность](#vector---индексированная-последовательность)
+   - [Array - изменяемый массив](#array---изменяемый-массив)
+   - [Set - уникальные элементы](#set---уникальные-элементы)
+   - [Map - пары ключ-значение](#map---пары-ключ-значение)
+   - [Seq - абстрактная последовательность](#seq---абстрактная-последовательность)
+   - [Seq vs List - ключевые отличия](#seq-vs-list---ключевые-отличия)
+   - [Иерархия коллекций](#иерархия-коллекций)
+
 2. [Immutability vs Mutability](#2-immutability-vs-mutability)
+   - [Преимущества immutability](#преимущества-immutability)
+   - [Когда использовать mutable](#когда-использовать-mutable)
+   - [Best practices](#best-practices)
+
 3. [Class, Object, Trait, Sealed Trait](#3-class-object-trait-sealed-trait)
+   - [Class - обычный класс](#class---обычный-класс)
+   - [Object - singleton](#object---singleton)
+   - [Trait - интерфейс с реализацией](#trait---интерфейс-с-реализацией)
+   - [Sealed Trait - закрытая иерархия](#sealed-trait---закрытая-иерархия)
+   - [Сравнительная таблица](#сравнительная-таблица)
+   - [Когда использовать](#когда-использовать)
+
 4. [Case Classes vs Classes](#4-case-classes-vs-classes)
    - [Structural Equality vs Referential Equality](#41-structural-equality-vs-referential-equality)
+   - [Определения и различия](#определения-и-различия)
+   - [Переопределение equals и hashCode](#переопределение-equals-и-hashcode)
+   - [Контракт equals/hashCode](#контракт-equalshashcode)
+   - [Проблемы в коллекциях](#проблемы-в-коллекциях)
+   - [Best practices](#best-practices-1)
+
 5. [Pattern Matching](#5-pattern-matching)
+   - [Базовое pattern matching](#базовое-pattern-matching)
+   - [Exhaustiveness checking](#exhaustiveness-checking)
+   - [Guards (условия)](#guards-условия)
+   - [Extractors (unapply)](#extractors-unapply)
+   - [Nested pattern matching](#nested-pattern-matching)
+
 6. [For-Comprehensions](#6-for-comprehensions)
+   - [Синтаксический сахар](#синтаксический-сахар)
+   - [Правила трансформации](#правила-трансформации)
+   - [С Option, Either, Future](#с-option-either-future)
+
 7. [Implicit и Implicit Resolution](#7-implicit-и-implicit-resolution)
+   - [7.1. Implicit Values](#71-implicit-values-неявные-значения)
+   - [7.2. Implicit Resolution](#72-implicit-resolution-разрешение-неявных-значений)
+   - [7.3. Generic Types](#73-implicit-resolution-для-generic-types)
+   - [7.4. Context Bounds](#74-context-bounds-контекстные-границы)
+   - [7.5. Implicit Scope](#75-implicit-scope-область-видимости)
+   - [7.6. Приоритет Resolution](#76-приоритет-implicit-resolution)
+   - [7.7. Debugging](#77-debugging-implicit-resolution)
+   - [7.8. Best Practices](#78-best-practices-для-implicit)
+   - [7.9. Практические паттерны](#79-практические-паттерны)
+
 8. [Implicit Conversions и Implicit Parameters](#8-implicit-conversions-и-implicit-parameters)
+   - [Implicit conversions](#implicit-conversions)
+   - [Implicit parameters](#implicit-parameters)
+   - [Implicit resolution rules](#implicit-resolution-rules)
+   - [Type Class pattern](#type-class-pattern)
+
 9. [Type Inference и Type Annotations](#9-type-inference-и-type-annotations)
+   - [Вывод типов](#вывод-типов)
+   - [Когда нужны аннотации](#когда-нужны-аннотации)
+   - [Type ascription](#type-ascription)
+   - [Best practices](#best-practices-2)
+
 10. [Функции apply и unapply](#10-функции-apply-и-unapply)
-11. [Теория категорий для функционального программирования](#11-теория-категорий-для-функционального-программирования)
+    - [Apply - вызов объектов как функций](#apply---вызов-объектов-как-функций)
+    - [Unapply - экстракторы](#unapply---экстракторы)
+    - [Типы unapply](#типы-unapply)
+    - [Симметрия apply/unapply](#симметрия-applyunapply)
+
+11. [val, var, def, lazy val](#11-val-var-def-lazy-val---способы-определения-значений)
+    - [11.1. val - Immutable значение](#111-val---immutable-значение-с-eager-evaluation)
+    - [11.2. var - Mutable переменная](#112-var---mutable-переменная-с-eager-evaluation)
+    - [11.3. def - Метод](#113-def---метод-с-by-name-evaluation)
+    - [11.4. lazy val - Ленивое значение](#114-lazy-val---ленивое-immutable-значение)
+    - [11.5. Сравнение производительности](#115-сравнение-производительности)
+    - [11.6. Правила выбора](#116-правила-выбора)
+
+12. [Variance - Covariance, Contravariance, Invariance](#12-variance---covariance-contravariance-invariance)
+    - [12.1. Invariance](#121-invariance-инвариантность---по-умолчанию)
+    - [12.2. Covariance (+A)](#122-covariance-ковариантность---a)
+    - [12.3. Contravariance (-A)](#123-contravariance-контравариантность----a)
+    - [12.4. Сочетание Variance](#124-сочетание-variance)
+    - [12.5. Правила безопасности](#125-правила-безопасности-variance)
+    - [12.6. Когда использовать](#126-когда-использовать-какую-variance)
+
+**Практические задачи и вопросы**
 
 #### [День 3-4: Функциональное программирование](#день-3-4-функциональное-программирование)
 
+**📖 Теоретические материалы:**
+
+13. [Теория категорий для функционального программирования](#13-теория-категорий-для-функционального-программирования)
+    - [13.1. Категория (Category)](#131-категория-category)
+    - [13.2. Функтор (Functor)](#132-функтор-functor)
+      - [Математическое определение](#математическое-определение-функтора)
+      - [Диаграммы функтора](#диаграмма-функтора)
+      - [Законы функтора](#законы-функтора-формально)
+      - [Проверка законов](#проверка-законов-функтора)
+    - [13.3. Аппликативный функтор (Applicative)](#133-аппликативный-функтор-applicative)
+    - [13.4. Монада (Monad)](#134-монада-monad)
+    - [13.5. Natural Transformation](#135-natural-transformation-естественное-преобразование)
+    - [13.6. Monoid](#136-monoid-моноид)
+    - [13.7. Semigroup](#137-semigroup-полугруппа)
+    - [13.8. Связь концепций](#138-связь-концепций---диаграмма-иерархии)
+
+14. [Higher-Order Functions](#14-higher-order-functions-функции-высшего-порядка)
+    - [14.1. Функции как параметры](#141-функции-как-параметры)
+    - [14.2. map - преобразование элементов](#142-map---преобразование-элементов)
+    - [14.3. flatMap - преобразование с распаковкой](#143-flatmap---преобразование-с-распаковкой)
+    - [14.4. fold и reduce - агрегация](#144-fold-и-reduce---агрегация)
+    - [14.5. Другие higher-order functions](#145-другие-higher-order-functions)
+
+15. [Function Composition](#15-function-composition-композиция-функций)
+    - [15.1. andThen - слева направо](#151-andthen---применение-слева-направо)
+    - [15.2. compose - справа налево](#152-compose---применение-справа-налево)
+
+16. [Currying и Partial Application](#16-currying-и-partial-application)
+    - [16.1. Currying - преобразование функции](#161-currying---преобразование-функции)
+    - [16.2. Partial Application - частичное применение](#162-partial-application---частичное-применение)
+
+17. [Монады (Monad)](#17-монады-monad)
+    - [17.1. Option - опциональные значения](#171-option---опциональные-значения)
+    - [17.2. Either - обработка ошибок](#172-either---обработка-ошибок)
+    - [17.3. Try - обработка исключений](#173-try---обработка-исключений)
+    - [17.4. Future - асинхронные вычисления](#174-future---асинхронные-вычисления)
+
+18. [For-Comprehensions как syntactic sugar](#18-for-comprehensions-как-syntactic-sugar)
+    - [Правила desugaring](#правила-desugaring-развертывания)
+    - [Практические примеры](#практические-примеры)
+
+19. [Recursion vs Tail Recursion](#19-recursion-vs-tail-recursion)
+    - [19.1. Обычная рекурсия](#191-обычная-рекурсия)
+    - [19.2. Tail Recursion (@tailrec)](#192-tail-recursion-хвостовая-рекурсия)
+    - [Паттерны tail recursion](#паттерны-tail-recursion)
+
+20. [Lazy Evaluation (Stream/LazyList)](#20-lazy-evaluation-streamlazylist)
+    - [20.1. Lazy evaluation - определение](#201-lazy-evaluation---что-это)
+    - [20.2. LazyList](#202-lazylist-ранее-stream-в-scala-212)
+    - [20.3. Преимущества lazy evaluation](#203-преимущества-lazy-evaluation)
+    - [20.4. View - lazy обертка](#204-view---lazy-обертка-над-коллекциями)
+    - [20.5. Memoization](#205-memoization-в-lazylist)
+
+**Практические задачи и вопросы**
+
 #### [День 5-7: Type System](#день-5-7-type-system)
+- Variance annotations
+- Type classes
+- Higher-kinded types
+- Path-dependent types
 
 ### [🚀 Неделя 2: Scala Collections + Concurrency](#-неделя-2-scala-collections--concurrency)
 
 #### [День 1-3: Collections Deep Dive](#день-1-3-collections-deep-dive)
+- Collection hierarchy
+- Performance characteristics
+- View и Parallel collections
+- Custom collections
 
 #### [День 4-7: Concurrency & Futures](#день-4-7-concurrency--futures)
+- Future и Promise
+- ExecutionContext
+- Future composition
+- Error handling
+- Actor model basics
 
 ### [💎 Неделя 3: Продвинутые темы](#-неделя-3-продвинутые-темы)
 
 #### [День 1-3: Cats / Scalaz](#день-1-3-cats--scalaz)
+- Semigroup, Monoid
+- Functor, Applicative, Monad
+- Monad Transformers
+- Validated vs Either
+- IO Monad
+- Free Monad
+- Tagless Final
 
 #### [День 4-7: Akka / Akka Streams](#день-4-7-akka--akka-streams)
+- Actor model
+- Actor lifecycle
+- Supervision strategies
+- Akka Streams
+- Backpressure
+- Graph DSL
+- Akka HTTP basics
 
 ### [🏗️ Неделя 4: Архитектура и паттерны](#️-неделя-4-архитектура-и-паттерны)
 
 #### [День 1-3: Design Patterns в Scala](#день-1-3-design-patterns-в-scala)
+- Creational patterns
+- Structural patterns
+- Behavioral patterns
+- Functional patterns
+- Cake pattern
+- Type classes pattern
 
 #### [День 4-7: Testing](#день-4-7-testing)
+- ScalaTest
+- Property-based testing
+- Mocking
+- Integration testing
 
 ### [🗄️ Неделя 5: Базы данных и интеграции](#️-неделя-5-базы-данных-и-интеграции)
 
 #### [День 1-4: Database access](#день-1-4-database-access)
+- Slick
+- Doobie
+- Connection pools
+- Transactions
 
 #### [День 5-7: Message Queues & Integration](#день-5-7-message-queues--integration)
+- Kafka
+- RabbitMQ
+- Redis
+- HTTP clients
+- gRPC
+- JSON (Circe, Play JSON)
 
 ### [🏛️ Неделя 6: System Design + Interview Prep](#️-неделя-6-system-design--interview-prep)
 
 #### [День 1-3: System Design](#день-1-3-system-design)
+- Microservices architecture
+- Event-driven architecture
+- CQRS + Event Sourcing
+- CAP theorem
+- Distributed transactions (Saga)
+- Load balancing
+- Caching strategies
 
 #### [День 4-7: Mock Interviews](#день-4-7-mock-interviews)
+- Coding Practice (LeetCode/HackerRank)
+- Scala-specific tasks
 
 ### [📚 Ресурсы для изучения](#-ресурсы-для-изучения)
+- Книги (Must-read)
+- Online курсы
+- Документация
+- Practice платформы
 
 ### [🎤 Типичные вопросы на собеседовании](#-типичные-вопросы-на-собеседовании)
+- Scala Basics
+- Functional Programming
+- Type System
+- Concurrency
+- Architecture
+- Performance
 
 ### [✅ Checklist перед собеседованием](#-checklist-перед-собеседованием)
+- За неделю до
+- За день до
+- В день собеседования
 
 ### [💡 Советы](#-советы)
+- Coding interview
+- System design
+- Behavioral questions (STAR method)
 
 ### [🎯 Финальный чек-лист навыков Senior Scala Developer](#-финальный-чек-лист-навыков-senior-scala-developer)
+- Must-have (обязательно)
+- Nice-to-have (желательно)
+- Senior-level
 
 ---
 
@@ -3043,7 +3253,944 @@ order match {
 
 ---
 
-##### 11. Теория категорий для функционального программирования
+##### 11. val, var, def, lazy val - Способы определения значений
+
+**Обзор:**
+
+В Scala существует 4 основных способа определения значений, каждый с различной семантикой оценки (evaluation) и изменяемости (mutability).
+
+**Сравнительная таблица:**
+
+| Ключевое слово | Оценка | Изменяемость | Тип члена | Пример |
+|----------------|---------|--------------|-----------|---------|
+| **val** | Eager (немедленная) | Immutable | Значение | `val x = 42` |
+| **var** | Eager (немедленная) | Mutable | Переменная | `var x = 42` |
+| **def** | By-name (при каждом вызове) | N/A | Метод | `def x = 42` |
+| **lazy val** | Lazy (при первом обращении) | Immutable | Значение | `lazy val x = 42` |
+
+---
+
+**11.1. val - Immutable значение с eager evaluation**
+
+```scala
+val x = 42
+// x = 43  // ERROR! Cannot reassign val
+
+// Вычисляется немедленно при определении
+val expensive = {
+  println("Computing...")
+  Thread.sleep(1000)
+  42
+}
+// Напечатает "Computing..." немедленно
+
+// Последующие обращения используют сохраненное значение
+println(expensive)  // 42, без повторного вычисления
+println(expensive)  // 42, без повторного вычисления
+```
+
+**Характеристики val:**
+- ✅ **Immutable**: значение нельзя изменить после инициализации
+- ✅ **Eager evaluation**: вычисляется сразу при определении
+- ✅ **Вычисляется один раз**: результат кешируется
+- ✅ **Thread-safe**: безопасно для многопоточного доступа
+- ✅ **Referential transparency**: всегда возвращает одно и то же значение
+
+**Когда использовать val:**
+```scala
+// ✅ Константы
+val PI = 3.14159
+val MAX_SIZE = 1000
+
+// ✅ Immutable данные
+val user = User("Alice", 30)
+val config = Config.load()
+
+// ✅ Результаты вычислений, которые не меняются
+val result = expensiveComputation()
+val list = List(1, 2, 3)
+
+// ✅ Функциональный стиль (предпочтительно)
+val doubled = numbers.map(_ * 2)
+```
+
+---
+
+**11.2. var - Mutable переменная с eager evaluation**
+
+```scala
+var x = 42
+x = 43  // OK, можно переназначить
+
+// Вычисляется немедленно
+var counter = {
+  println("Initializing counter...")
+  0
+}
+// Напечатает "Initializing counter..." немедленно
+
+counter = counter + 1  // можно изменять
+println(counter)  // 1
+```
+
+**Характеристики var:**
+- ❌ **Mutable**: значение можно изменить
+- ✅ **Eager evaluation**: вычисляется сразу
+- ❌ **Not thread-safe**: требует синхронизации в многопоточной среде
+- ❌ **Breaks referential transparency**: может возвращать разные значения
+
+**Когда использовать var:**
+```scala
+// ✅ Локальные счетчики и аккумуляторы
+def sum(numbers: List[Int]): Int = {
+  var total = 0  // локальный var - OK
+  for (n <- numbers) {
+    total += n
+  }
+  total
+}
+
+// ✅ Алгоритмы с in-place updates
+def bubbleSort(arr: Array[Int]): Unit = {
+  var swapped = true
+  while (swapped) {
+    swapped = false
+    // сортировка с мутацией
+  }
+}
+
+// ❌ ПЛОХО: var в классе (утечка mutability)
+class BadCounter {
+  var count = 0  // плохо - публичный var
+}
+
+// ✅ ХОРОШО: инкапсуляция mutability
+class GoodCounter {
+  private var count = 0  // приватный var
+  def increment(): Unit = count += 1
+  def getCount: Int = count  // публичный доступ только на чтение
+}
+```
+
+**Best Practice:**
+```scala
+// Предпочитайте val вместо var
+// ❌ ПЛОХО
+var sum = 0
+for (x <- list) {
+  sum += x
+}
+
+// ✅ ХОРОШО
+val sum = list.sum
+
+// ❌ ПЛОХО
+var result = List.empty[Int]
+for (x <- list) {
+  result = result :+ (x * 2)
+}
+
+// ✅ ХОРОШО
+val result = list.map(_ * 2)
+```
+
+---
+
+**11.3. def - Метод с by-name evaluation**
+
+```scala
+def x = 42
+// Это метод, не значение!
+
+// Вычисляется при КАЖДОМ обращении
+def expensive = {
+  println("Computing...")
+  Thread.sleep(1000)
+  42
+}
+
+println(expensive)  // Напечатает "Computing...", подождет 1 сек
+println(expensive)  // Напечатает "Computing..." СНОВА, подождет 1 сек
+```
+
+**Характеристики def:**
+- 🔄 **By-name evaluation**: вычисляется при каждом вызове
+- 🔄 **No caching**: результат НЕ кешируется
+- ✅ **Параметры**: может принимать параметры
+- ✅ **Полиморфизм**: может быть переопределен в подклассах
+
+**Когда использовать def:**
+
+```scala
+// ✅ Вычисления с side-effects
+def currentTime: Long = System.currentTimeMillis()
+def randomNumber: Int = Random.nextInt(100)
+
+println(currentTime)  // 1699887654321
+println(currentTime)  // 1699887654322 - другое значение!
+
+// ✅ Вычисления, зависящие от изменяемого состояния
+class Counter {
+  private var count = 0
+  
+  def next: Int = {  // def, потому что возвращает новое значение каждый раз
+    count += 1
+    count
+  }
+}
+
+val counter = new Counter()
+counter.next  // 1
+counter.next  // 2
+
+// ✅ Дорогие вычисления, которые могут не понадобиться
+class DataProcessor {
+  def heavyComputation: Result = {
+    // Вычисляется только если вызвано
+    expensiveOperation()
+  }
+}
+
+// ✅ Переопределяемые методы
+trait Shape {
+  def area: Double  // может быть переопределен
+}
+
+class Circle(radius: Double) extends Shape {
+  def area: Double = math.Pi * radius * radius
+}
+```
+
+**def vs val:**
+```scala
+class Example {
+  val eagerVal = {
+    println("val evaluated")
+    42
+  }
+  
+  def byNameDef = {
+    println("def evaluated")
+    42
+  }
+  
+  lazy val lazyValue = {
+    println("lazy val evaluated")
+    42
+  }
+}
+
+val ex = new Example()
+// Напечатает "val evaluated" сразу
+
+println(ex.eagerVal)  // 42, ничего не печатает
+println(ex.eagerVal)  // 42, ничего не печатает
+
+println(ex.byNameDef)  // 42, печатает "def evaluated"
+println(ex.byNameDef)  // 42, печатает "def evaluated" СНОВА
+
+println(ex.lazyValue)  // 42, печатает "lazy val evaluated"
+println(ex.lazyValue)  // 42, ничего не печатает
+```
+
+---
+
+**11.4. lazy val - Ленивое immutable значение**
+
+```scala
+lazy val x = 42
+
+// Вычисляется при ПЕРВОМ обращении
+lazy val expensive = {
+  println("Computing...")
+  Thread.sleep(1000)
+  42
+}
+
+// Ничего не печатается до первого обращения
+println("Before access")
+
+println(expensive)  // Напечатает "Computing...", подождет, вернет 42
+println(expensive)  // 42, без печати и ожидания (результат закеширован)
+```
+
+**Характеристики lazy val:**
+- 💤 **Lazy evaluation**: вычисляется при первом обращении
+- ✅ **Вычисляется один раз**: результат кешируется
+- ✅ **Immutable**: нельзя переназначить
+- ⚠️ **Thread-safe**: с синхронизацией (небольшой overhead)
+- ⚠️ **Initialization overhead**: первое обращение медленнее
+
+**Когда использовать lazy val:**
+
+```scala
+// ✅ Дорогие вычисления, которые могут не понадобиться
+class Config {
+  lazy val database = {
+    println("Connecting to database...")
+    Database.connect()  // дорогая операция
+  }
+  
+  lazy val cache = {
+    println("Initializing cache...")
+    new Cache()  // может не понадобиться
+  }
+}
+
+val config = new Config()
+// Ничего не инициализируется
+
+// Используем только если нужно
+if (needsDatabase) {
+  config.database  // инициализируется только здесь
+}
+
+// ✅ Разрешение циклических зависимостей
+class Module {
+  lazy val serviceA: ServiceA = new ServiceA(serviceB)
+  lazy val serviceB: ServiceB = new ServiceB(serviceA)
+}
+
+// ✅ Ленивые бесконечные структуры данных
+lazy val fibonacci: LazyList[BigInt] = 
+  BigInt(0) #:: BigInt(1) #:: fibonacci.zip(fibonacci.tail).map { case (a, b) => a + b }
+
+fibonacci.take(10).toList  // List(0, 1, 1, 2, 3, 5, 8, 13, 21, 34)
+
+// ✅ Избежание null во время инициализации
+trait Component {
+  lazy val dependency: Dependency  // инициализируется позже
+}
+```
+
+**lazy val в классах:**
+```scala
+class ExpensiveResource {
+  println("Creating resource")
+  
+  val eagerField = {
+    println("Eager field initialized")
+    computeExpensive()
+  }
+  
+  lazy val lazyField = {
+    println("Lazy field initialized")
+    computeExpensive()
+  }
+}
+
+// При создании:
+val resource = new ExpensiveResource()
+// Напечатает:
+// Creating resource
+// Eager field initialized
+
+// При первом обращении:
+resource.lazyField
+// Напечатает:
+// Lazy field initialized
+```
+
+---
+
+**11.5. Сравнение производительности**
+
+```scala
+import scala.concurrent.duration._
+
+// Бенчмарк
+def benchmark[A](name: String)(f: => A): Unit = {
+  val start = System.nanoTime()
+  f
+  val end = System.nanoTime()
+  println(s"$name: ${(end - start).nanos.toMillis} ms")
+}
+
+class PerformanceTest {
+  val valField = expensiveComputation()      // вычисляется при создании
+  lazy val lazyField = expensiveComputation() // вычисляется при обращении
+  def defField = expensiveComputation()       // вычисляется при каждом обращении
+}
+
+benchmark("Creating object") {
+  new PerformanceTest()
+  // val: дорого (вычисляется сразу)
+  // lazy val: дешево (не вычисляется)
+  // def: дешево (не вычисляется)
+}
+
+val obj = new PerformanceTest()
+
+benchmark("First access") {
+  obj.lazyField
+  // val: дешево (уже вычислено)
+  // lazy val: дорого (вычисляется сейчас) + overhead синхронизации
+  // def: дорого (вычисляется)
+}
+
+benchmark("Second access") {
+  obj.lazyField
+  // val: дешево (используется кеш)
+  // lazy val: дешево (используется кеш)
+  // def: дорого (вычисляется снова!)
+}
+```
+
+---
+
+**11.6. Правила выбора**
+
+```scala
+// Используйте val по умолчанию
+val x = 42  // ✅ DEFAULT CHOICE
+
+// Используйте var только когда действительно нужна мутация
+var counter = 0  // ⚠️ Только если необходимо
+
+// Используйте def для:
+// - Вычислений с side effects
+// - Параметризованных методов
+// - Переопределяемых членов
+def currentTime = System.currentTimeMillis()  // ✅ Side effect
+def add(x: Int, y: Int) = x + y               // ✅ Параметры
+
+// Используйте lazy val для:
+// - Дорогих вычислений, которые могут не понадобиться
+// - Разрешения циклических зависимостей
+// - Ленивой инициализации ресурсов
+lazy val config = loadHeavyConfig()  // ✅ Может не понадобиться
+```
+
+**Decision Tree (Дерево решений):**
+```
+Нужна мутация?
+├─ Да → var (но лучше подумайте дважды!)
+└─ Нет
+   ├─ Дорогое вычисление, которое может не понадобиться?
+   │  └─ Да → lazy val
+   └─ Нет
+      ├─ Нужно вычислять каждый раз (side effects)?
+      │  └─ Да → def
+      └─ Нет → val (DEFAULT)
+```
+
+**Примеры из реальной практики:**
+```scala
+class WebService {
+  // val - конфигурация, загружается сразу
+  val config: Config = Config.load()
+  
+  // lazy val - пул соединений, может не понадобиться в тестах
+  lazy val connectionPool: ConnectionPool = ConnectionPool.create()
+  
+  // def - timestamp для каждого запроса
+  def requestId: String = UUID.randomUUID().toString
+  
+  // var - счетчик запросов (приватный!)
+  private var requestCount: Int = 0
+  
+  def handleRequest(request: Request): Response = {
+    requestCount += 1  // мутация
+    
+    val userId = request.userId  // immutable локальная переменная
+    val user = userService.getUser(userId)
+    
+    Response.success(user)
+  }
+}
+```
+
+---
+
+##### 12. Variance - Covariance, Contravariance, Invariance
+
+**Что такое Variance?**
+
+Variance (вариантность) определяет, как параметризованные типы связаны с отношениями наследования их параметров.
+
+Если `Dog <: Animal` (Dog является подтипом Animal), то:
+- **Covariant** `+A`: `Container[Dog] <: Container[Animal]` ✅
+- **Contravariant** `-A`: `Container[Animal] <: Container[Dog]` ✅ (обратное!)
+- **Invariant** `A`: нет связи между `Container[Dog]` и `Container[Animal]` ❌
+
+**Синтаксис в Scala:**
+```scala
+class Covariant[+A]      // ковариантный
+class Contravariant[-A]  // контравариантный  
+class Invariant[A]       // инвариантный (по умолчанию)
+```
+
+---
+
+**12.1. Invariance (Инвариантность) - по умолчанию**
+
+```scala
+class Box[A](val value: A)
+
+class Animal
+class Dog extends Animal
+class Cat extends Animal
+
+val dogBox: Box[Dog] = new Box(new Dog())
+val animalBox: Box[Animal] = new Box(new Animal())
+
+// ❌ НЕ КОМПИЛИРУЕТСЯ
+// val animalBox2: Box[Animal] = dogBox
+// Type mismatch: found Box[Dog], required Box[Animal]
+
+// Box инвариантен - нет связи между Box[Dog] и Box[Animal]
+```
+
+**Почему инвариантность по умолчанию?**
+
+```scala
+class MutableBox[A](var value: A) {
+  def set(newValue: A): Unit = value = newValue
+  def get: A = value
+}
+
+// Если бы MutableBox был ковариантным:
+val dogBox = new MutableBox[Dog](new Dog())
+val animalBox: MutableBox[Animal] = dogBox  // предположим, что компилируется
+
+// Мы могли бы положить Cat в Box[Dog]!
+animalBox.set(new Cat())  // ❌ Нарушение типобезопасности!
+
+// Теперь dogBox содержит Cat вместо Dog
+val dog: Dog = dogBox.get  // ❌ Runtime exception!
+```
+
+**Когда использовать инвариантность:**
+- Mutable контейнеры
+- Типы, которые и читают, и пишут значение параметра типа
+
+```scala
+class MutableList[A] {  // Invariant - правильно
+  def add(elem: A): Unit = ???
+  def get(index: Int): A = ???
+}
+
+class Array[A] {  // В Scala Array инвариантен (в отличие от Java)
+  def update(index: Int, elem: A): Unit = ???
+  def apply(index: Int): A = ???
+}
+```
+
+---
+
+**12.2. Covariance (Ковариантность) - +A**
+
+```scala
+class ReadOnlyBox[+A](private val value: A) {
+  def get: A = value
+  // НЕ МОЖЕМ: def set(newValue: A): Unit = ???
+  // Ковариантный параметр не может появляться в contravariant position
+}
+
+val dogBox: ReadOnlyBox[Dog] = new ReadOnlyBox(new Dog())
+val animalBox: ReadOnlyBox[Animal] = dogBox  // ✅ КОМПИЛИРУЕТСЯ!
+
+// Можем читать как Animal
+val animal: Animal = animalBox.get  // ✅ Dog является Animal
+```
+
+**Правило ковариантности:**
+
+Если `A <: B`, то `F[A] <: F[B]` для ковариантного `F[+T]`
+
+```
+     Dog <: Animal
+         ↓
+Box[Dog] <: Box[Animal]
+```
+
+**Позиции параметра типа:**
+
+```scala
+class Example[+A] {
+  // ✅ COVARIANT POSITION (output) - OK
+  def get: A = ???
+  def produce(): A = ???
+  def container: List[A] = ???
+  
+  // ❌ CONTRAVARIANT POSITION (input) - ERROR!
+  // def set(value: A): Unit = ???
+  // def consume(value: A): Unit = ???
+  
+  // ✅ WORKAROUND: Lower type bound
+  def set[B >: A](value: B): Unit = ???
+}
+```
+
+**Примеры ковариантных типов в Scala:**
+
+```scala
+// List[+A] - ковариантный
+val dogs: List[Dog] = List(new Dog())
+val animals: List[Animal] = dogs  // ✅ OK
+
+// Option[+A] - ковариантный
+val dogOpt: Option[Dog] = Some(new Dog())
+val animalOpt: Option[Animal] = dogOpt  // ✅ OK
+
+// Vector[+A] - ковариантный
+val dogVec: Vector[Dog] = Vector(new Dog())
+val animalVec: Vector[Animal] = dogVec  // ✅ OK
+
+// Immutable collections - обычно ковариантны
+```
+
+**Практический пример:**
+
+```scala
+sealed trait Animal {
+  def name: String
+}
+case class Dog(name: String) extends Animal
+case class Cat(name: String) extends Animal
+
+// Ковариантный sealed trait
+sealed trait AnimalList[+A] {
+  def head: A
+  def tail: AnimalList[A]
+}
+
+case object EmptyList extends AnimalList[Nothing] {
+  def head = throw new NoSuchElementException
+  def tail = throw new NoSuchElementException
+}
+
+case class NonEmpty[+A](head: A, tail: AnimalList[A]) extends AnimalList[A]
+
+// Использование
+val dogs: AnimalList[Dog] = NonEmpty(Dog("Rex"), EmptyList)
+val animals: AnimalList[Animal] = dogs  // ✅ Ковариантность работает!
+
+def printAnimals(animals: AnimalList[Animal]): Unit = {
+  if (animals != EmptyList) {
+    println(animals.head.name)
+    printAnimals(animals.tail)
+  }
+}
+
+printAnimals(dogs)  // ✅ Можем передать List[Dog] как List[Animal]
+```
+
+**Lower type bounds для методов:**
+
+```scala
+class ImmutableList[+A] {
+  // ❌ Не компилируется:
+  // def prepend(elem: A): ImmutableList[A] = ???
+  
+  // ✅ Компилируется с lower bound:
+  def prepend[B >: A](elem: B): ImmutableList[B] = ???
+}
+
+val dogList: ImmutableList[Dog] = ???
+val newList = dogList.prepend(new Cat())  // B = Animal
+// newList: ImmutableList[Animal]
+```
+
+---
+
+**12.3. Contravariance (Контравариантность) - -A**
+
+```scala
+trait Printer[-A] {
+  def print(value: A): Unit
+}
+
+val animalPrinter: Printer[Animal] = new Printer[Animal] {
+  def print(animal: Animal): Unit = println(s"Animal: ${animal.name}")
+}
+
+val dogPrinter: Printer[Dog] = animalPrinter  // ✅ КОМПИЛИРУЕТСЯ!
+
+// Это безопасно, потому что:
+dogPrinter.print(new Dog("Rex"))
+// Вызовет animalPrinter.print(new Dog("Rex"))
+// Dog является Animal, поэтому все OK!
+```
+
+**Правило контравариантности:**
+
+Если `A <: B`, то `F[B] <: F[A]` для контравариантного `F[-T]` (обратное направление!)
+
+```
+        Dog <: Animal
+             ↓
+Printer[Animal] <: Printer[Dog]  (обратное!)
+```
+
+**Интуиция:**
+
+Контравариантность применяется к "потребителям" (consumers) значений.
+
+Если функция может работать с `Animal`, она точно сможет работать с `Dog` (Dog это тоже Animal).
+
+```scala
+trait Function1[-T, +R] {  // T контравариантен, R ковариантен
+  def apply(t: T): R
+}
+
+// Dog => String  может использоваться как  Animal => String
+val dogToString: Dog => String = _.name
+val animalToString: Animal => String = dogToString  // ✅ OK
+```
+
+**Позиции параметра типа:**
+
+```scala
+class Example[-A] {
+  // ✅ CONTRAVARIANT POSITION (input) - OK
+  def consume(value: A): Unit = ???
+  def process(f: A => Unit): Unit = ???
+  
+  // ❌ COVARIANT POSITION (output) - ERROR!
+  // def produce(): A = ???
+  // def get: A = ???
+  
+  // ✅ WORKAROUND: Upper type bound
+  def produce[B <: A](): B = ???
+}
+```
+
+**Примеры контравариантных типов:**
+
+```scala
+// Ordering[-T] - контравариантный
+val animalOrdering: Ordering[Animal] = Ordering.by(_.name)
+val dogOrdering: Ordering[Dog] = animalOrdering  // ✅ OK
+
+val dogs = List(Dog("Rex"), Dog("Max"))
+dogs.sorted(dogOrdering)  // Используем Animal ordering для Dog
+
+// CanEqual[-L, -R] в Scala 3
+// JsonWriter[-A]
+// Serializer[-A]
+```
+
+**Практический пример - JSON Writer:**
+
+```scala
+trait JsonWriter[-A] {
+  def write(value: A): Json
+}
+
+val animalWriter: JsonWriter[Animal] = new JsonWriter[Animal] {
+  def write(animal: Animal): Json = 
+    Json.obj("name" -> animal.name, "type" -> "animal")
+}
+
+// Можем использовать для Dog
+val dogWriter: JsonWriter[Dog] = animalWriter  // ✅ Контравариантность
+
+dogWriter.write(new Dog("Rex"))
+// Вызовет animalWriter.write(Dog("Rex")) - безопасно!
+
+// Функция принимающая JsonWriter[Dog]
+def serializeDogs(dogs: List[Dog], writer: JsonWriter[Dog]): List[Json] =
+  dogs.map(writer.write)
+
+// Можем передать JsonWriter[Animal]
+serializeDogs(List(Dog("Rex")), animalWriter)  // ✅ OK
+```
+
+---
+
+**12.4. Сочетание Variance**
+
+```scala
+// Function1 использует оба вида variance
+trait Function1[-T, +R] {
+  def apply(t: T): R
+}
+
+// Если Dog <: Animal и String <: Any, то:
+// (Animal => String) <: (Dog => Any)
+//    ↑          ↑
+//    |          +---- Covariant (выходной тип)
+//    +--------------- Contravariant (входной тип)
+
+val f1: Animal => String = (a: Animal) => a.name
+val f2: Dog => Any = f1  // ✅ OK
+
+// f2 может принимать Dog (Dog <: Animal)
+// f2 может возвращать Any (String <: Any)
+```
+
+**Список сортировки:**
+
+```scala
+class List[+A] {
+  // Метод sorted требует Ordering
+  def sorted[B >: A](implicit ord: Ordering[B]): List[B] = ???
+  //         ↑ lower bound
+  //         Ordering контравариантен
+}
+
+val dogs: List[Dog] = List(Dog("Rex"), Dog("Max"))
+
+implicit val animalOrdering: Ordering[Animal] = Ordering.by(_.name)
+
+dogs.sorted  // ✅ Использует Ordering[Animal] для List[Dog]
+// Работает благодаря:
+// - List ковариантен (+A)
+// - Ordering контравариантен (-T)
+// - Lower bound B >: A
+```
+
+---
+
+**12.5. Правила безопасности variance**
+
+**Liskov Substitution Principle (LSP):**
+
+Если `S <: T`, то объект типа `T` может быть заменен объектом типа `S` без изменения корректности программы.
+
+```scala
+class Animal {
+  def makeSound(): Unit = println("Some sound")
+}
+
+class Dog extends Animal {
+  override def makeSound(): Unit = println("Woof!")
+  def wagTail(): Unit = println("Wagging tail")
+}
+
+// Covariant - безопасно для read-only
+class AnimalShelter[+A <: Animal](private val animal: A) {
+  def getAnimal: A = animal  // ✅ Безопасно
+}
+
+val dogShelter: AnimalShelter[Dog] = new AnimalShelter(new Dog())
+val animalShelter: AnimalShelter[Animal] = dogShelter  // ✅ Ковариантность
+
+val animal: Animal = animalShelter.getAnimal  // ✅ Dog является Animal
+animal.makeSound()  // ✅ Работает
+```
+
+**Heap pollution в Java (почему Array не должен быть ковариантным):**
+
+```scala
+// В Java массивы ковариантны - это ОШИБКА дизайна
+// В Scala Array инвариантен - это правильно!
+
+// Если бы Array был ковариантным (как в Java):
+val dogs: Array[Dog] = Array(new Dog())
+val animals: Array[Animal] = dogs  // В Java это OK, в Scala - ERROR!
+
+animals(0) = new Cat()  // В Java: ArrayStoreException в runtime!
+                        // В Scala: не компилируется - ERROR!
+
+val dog: Dog = dogs(0)  // Теперь здесь Cat!
+```
+
+---
+
+**12.6. Когда использовать какую variance**
+
+**Используйте Covariance (+A) когда:**
+```scala
+// ✅ Immutable контейнеры (только чтение)
+class ImmutableList[+A]
+class Option[+A]
+class Try[+A]
+class Future[+A]
+
+// ✅ Producers (производители значений)
+trait Producer[+A] {
+  def produce(): A
+}
+
+// ✅ Return types в методах
+def getAnimals: List[Animal] = List(new Dog(), new Cat())
+```
+
+**Используйте Contravariance (-A) когда:**
+```scala
+// ✅ Consumers (потребители значений)
+trait Consumer[-A] {
+  def consume(value: A): Unit
+}
+
+trait Ordering[-A]
+trait JsonWriter[-A]
+trait Serializer[-A]
+
+// ✅ Параметры функций
+def processAnimals(processor: Animal => Unit): Unit = ???
+```
+
+**Используйте Invariance (A) когда:**
+```scala
+// ✅ Mutable контейнеры
+class Array[A]
+class MutableList[A]
+
+// ✅ Типы, которые и читают, и пишут
+class Buffer[A] {
+  def write(elem: A): Unit = ???
+  def read(): A = ???
+}
+
+// ✅ Сомневаетесь - используйте invariance (безопасно по умолчанию)
+```
+
+**Mnemonic (мнемоника):**
+
+- **+** (Plus/Positive) = **Producer** = Covariant = "gives out" (отдает)
+- **-** (Minus/Negative) = **Consumer** = Contravariant = "takes in" (принимает)
+- **No sign** = **Both** = Invariant = "both reads and writes" (и читает, и пишет)
+
+---
+
+**Практика:**
+
+```scala
+// Задача 1: Реализовать immutable Stack
+trait Stack[+A] {
+  def push[B >: A](elem: B): Stack[B]
+  def pop: (A, Stack[A])
+  def isEmpty: Boolean
+}
+
+// Задача 2: Pattern matching с extractors
+// Написать extractor для Email валидации
+
+// Задача 3: For-comprehension
+// Реализовать flatten для Option[Option[A]]
+```
+
+**Вопросы для самопроверки:**
+
+- [Разница между val, var, def, lazy val?](#11-val-var-def-lazy-val---способы-определения-значений)
+- [Что такое contravariance и covariance? Когда использовать +A и -A?](#12-variance---covariance-contravariance-invariance)
+- [Как работает implicit resolution?](#72-implicit-resolution-разрешение-неявных-значений)
+- [Разница между Seq, IndexedSeq, LinearSeq?](#1-collections-list-map-set-vector-array) (см. раздел Seq)
+
+---
+
+### День 3-4: Функциональное программирование
+
+**Темы:**
+
+- Higher-order functions (map, flatMap, fold, reduce)
+- Function composition
+- Currying и partial application
+- Монады (Option, Either, Try, Future)
+- For-comprehensions как syntactic sugar для flatMap
+- Recursion vs tail recursion (@tailrec)
+- Lazy evaluation (Stream/LazyList)
+
+---
+
+#### 📖 Теоретические материалы
+
+---
+
+##### 13. Теория категорий для функционального программирования
 
 **Введение:**
 
@@ -3058,7 +4205,7 @@ order match {
 
 ---
 
-**11.1. Категория (Category)**
+**13.1. Категория (Category)**
 
 **Определение категории:**
 
@@ -3139,7 +4286,7 @@ object ScalaCategory {
 
 ---
 
-**11.2. Функтор (Functor)**
+**13.2. Функтор (Functor)**
 
 **Математическое определение функтора:**
 
@@ -3459,7 +4606,7 @@ doubleInContext(Box(21))       // Box(42)
 
 ---
 
-**11.3. Аппликативный функтор (Applicative)**
+**13.3. Аппликативный функтор (Applicative)**
 
 **Определение:**
 
@@ -3546,7 +4693,7 @@ createUser("", 30, "alice@example.com")       // None
 
 ---
 
-**11.4. Монада (Monad)**
+**13.4. Монада (Monad)**
 
 **Математическое определение:** Монада в категории C - это тройка (T, η, μ) где:
 - T: C → C - эндофунктор
@@ -3743,7 +4890,7 @@ yield y.total
 
 ---
 
-**11.5. Natural Transformation (Естественное преобразование)**
+**13.5. Natural Transformation (Естественное преобразование)**
 
 **Определение 1:** 
 Натуральное преобразование η между функторами F и G - это семейство морфизмов:
@@ -3819,7 +4966,7 @@ val tryToEither: Try ~> Either[Throwable, *] =
 
 ---
 
-**11.6. Monoid (Моноид)**
+**13.6. Monoid (Моноид)**
 
 **Математическое определение:** Моноид - это алгебраическая структура (M, •, e) где:
 - M - множество
@@ -3955,7 +5102,7 @@ val totalCount = texts.map(countWords).foldLeft(wordCountMonoid.empty)(wordCount
 
 ---
 
-**11.7. Semigroup (Полугруппа)**
+**13.7. Semigroup (Полугруппа)**
 
 **Определение:**
 
@@ -4000,7 +5147,7 @@ def minSemigroup[A: Ordering]: Semigroup[A] = new Semigroup[A] {
 
 ---
 
-**11.8. Связь концепций - диаграмма иерархии**
+**13.8. Связь концепций - диаграмма иерархии**
 
 ```
 Semigroup
@@ -4052,43 +5199,1000 @@ validateForm("", "invalid", 15)
 
 ---
 
-**Практика:**
+
+##### 14. Higher-Order Functions (Функции высшего порядка)
+
+**Определение:**
+
+Higher-order function (функция высшего порядка) - это функция, которая:
+1. Принимает другие функции как параметры, ИЛИ
+2. Возвращает функцию как результат
+
+**14.1. Функции как параметры**
 
 ```scala
-// Задача 1: Реализовать immutable Stack
-trait Stack[+A] {
-  def push[B >: A](elem: B): Stack[B]
-  def pop: (A, Stack[A])
-  def isEmpty: Boolean
+// Функция, принимающая другую функцию
+def applyTwice(f: Int => Int, x: Int): Int = f(f(x))
+
+val double = (x: Int) => x * 2
+applyTwice(double, 3)  // double(double(3)) = double(6) = 12
+
+// Более сложный пример
+def repeat(n: Int)(action: => Unit): Unit = {
+  (1 to n).foreach(_ => action)
 }
 
-// Задача 2: Pattern matching с extractors
-// Написать extractor для Email валидации
-
-// Задача 3: For-comprehension
-// Реализовать flatten для Option[Option[A]]
+repeat(3) {
+  println("Hello!")
+}
+// Напечатает "Hello!" три раза
 ```
 
-**Вопросы для самопроверки:**
+**14.2. map - преобразование элементов**
 
-- Разница между val, var, def, lazy val?
-- Что такое contravariance и covariance? Когда использовать +A и -A?
-- Как работает implicit resolution?
-- Разница между Seq, IndexedSeq, LinearSeq?
+```scala
+// Сигнатура: def map[B](f: A => B): List[B]
+
+val numbers = List(1, 2, 3, 4, 5)
+
+// Преобразование каждого элемента
+numbers.map(_ * 2)           // List(2, 4, 6, 8, 10)
+numbers.map(_.toString)      // List("1", "2", "3", "4", "5")
+numbers.map(x => x * x)      // List(1, 4, 9, 16, 25)
+
+// map сохраняет структуру
+Some(42).map(_ * 2)          // Some(84)
+None.map(_ * 2)              // None
+
+Right(42).map(_ * 2)         // Right(84)
+Left("error").map(_ * 2)     // Left("error")
+
+// map для Future
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val futureNumber: Future[Int] = Future(42)
+futureNumber.map(_ * 2)      // Future[Int] = 84 (когда завершится)
+```
+
+**Реализация map для своего типа:**
+
+```scala
+sealed trait Maybe[+A] {
+  def map[B](f: A => B): Maybe[B] = this match {
+    case Just(value) => Just(f(value))
+    case Empty => Empty
+  }
+}
+case class Just[A](value: A) extends Maybe[A]
+case object Empty extends Maybe[Nothing]
+
+Just(42).map(_ * 2)    // Just(84)
+Empty.map(_ * 2)       // Empty
+```
 
 ---
 
-### День 3-4: Функциональное программирование
+**14.3. flatMap - преобразование с "распаковкой"**
 
-**Темы:**
+```scala
+// Сигнатура: def flatMap[B](f: A => F[B]): F[B]
 
-- Higher-order functions (map, flatMap, fold, reduce)
-- Function composition
-- Currying и partial application
-- Монады (Option, Either, Try, Future)
-- For-comprehensions как syntactic sugar для flatMap
-- Recursion vs tail recursion (@tailrec)
-- Lazy evaluation (Stream/LazyList)
+val numbers = List(1, 2, 3)
+
+// map создает вложенную структуру
+numbers.map(x => List(x, x * 10))
+// List(List(1, 10), List(2, 20), List(3, 30))
+
+// flatMap "уплощает" результат
+numbers.flatMap(x => List(x, x * 10))
+// List(1, 10, 2, 20, 3, 30)
+
+// flatMap = map + flatten
+numbers.map(x => List(x, x * 10)).flatten
+// List(1, 10, 2, 20, 3, 30)
+```
+
+**flatMap с Option:**
+
+```scala
+def parseIntOpt(s: String): Option[Int] = 
+  try Some(s.toInt) catch { case _: Exception => None }
+
+val stringOpt: Option[String] = Some("42")
+
+// map создает Option[Option[Int]]
+stringOpt.map(parseIntOpt)
+// Some(Some(42))
+
+// flatMap "распаковывает" внутренний Option
+stringOpt.flatMap(parseIntOpt)
+// Some(42)
+
+val invalidOpt: Option[String] = Some("invalid")
+invalidOpt.flatMap(parseIntOpt)
+// None
+```
+
+**Цепочка операций с flatMap:**
+
+```scala
+case class User(id: Long, name: String)
+case class Order(userId: Long, total: Double)
+
+def getUser(id: Long): Option[User] = ???
+def getOrders(user: User): Option[List[Order]] = ???
+def calculateTotal(orders: List[Order]): Option[Double] = ???
+
+// Вложенные flatMap
+val result: Option[Double] = 
+  getUser(1).flatMap { user =>
+    getOrders(user).flatMap { orders =>
+      calculateTotal(orders)
+    }
+  }
+
+// Или с for-comprehension (синтаксический сахар для flatMap)
+val result2: Option[Double] = for {
+  user <- getUser(1)
+  orders <- getOrders(user)
+  total <- calculateTotal(orders)
+} yield total
+```
+
+---
+
+**14.4. fold и reduce - агрегация**
+
+**fold - свертка с начальным значением:**
+
+```scala
+// foldLeft: (B, (B, A) => B) => B
+// Обходит слева направо
+
+val numbers = List(1, 2, 3, 4, 5)
+
+// Сумма
+numbers.foldLeft(0)(_ + _)
+// 0 + 1 = 1
+// 1 + 2 = 3
+// 3 + 3 = 6
+// 6 + 4 = 10
+// 10 + 5 = 15
+
+// Произведение
+numbers.foldLeft(1)(_ * _)  // 120
+
+// Конкатенация строк
+val words = List("Hello", "World", "!")
+words.foldLeft("")(_ + " " + _)  // " Hello World !"
+
+// foldRight: (B, (A, B) => B) => B
+// Обходит справа налево
+numbers.foldRight(0)(_ + _)
+// 5 + 0 = 5
+// 4 + 5 = 9
+// 3 + 9 = 12
+// 2 + 12 = 14
+// 1 + 14 = 15
+
+// Разница видна в порядке операций
+List(1, 2, 3).foldLeft(0)(_ - _)   // ((0 - 1) - 2) - 3 = -6
+List(1, 2, 3).foldRight(0)(_ - _)  // 1 - (2 - (3 - 0)) = 2
+```
+
+**Практические примеры fold:**
+
+```scala
+// Подсчет слов
+val text = List("hello", "world", "scala", "hello")
+val wordCount: Map[String, Int] = 
+  text.foldLeft(Map.empty[String, Int]) { (acc, word) =>
+    acc.updated(word, acc.getOrElse(word, 0) + 1)
+  }
+// Map("hello" -> 2, "world" -> 1, "scala" -> 1)
+
+// Reverse списка
+def reverse[A](list: List[A]): List[A] =
+  list.foldLeft(List.empty[A])((acc, elem) => elem :: acc)
+
+reverse(List(1, 2, 3, 4))  // List(4, 3, 2, 1)
+
+// Filter через fold
+def filter[A](list: List[A])(p: A => Boolean): List[A] =
+  list.foldRight(List.empty[A]) { (elem, acc) =>
+    if (p(elem)) elem :: acc else acc
+  }
+
+filter(List(1, 2, 3, 4, 5))(_ % 2 == 0)  // List(2, 4)
+```
+
+**reduce - свертка без начального значения:**
+
+```scala
+// reduce использует первый элемент как начальное значение
+
+val numbers = List(1, 2, 3, 4, 5)
+
+numbers.reduce(_ + _)   // 15
+numbers.reduce(_ * _)   // 120
+
+// Эквивалентно:
+// numbers.tail.foldLeft(numbers.head)(_ + _)
+
+// ⚠️ ОСТОРОЖНО: reduce бросает исключение на пустом списке
+// List.empty[Int].reduce(_ + _)  // UnsupportedOperationException
+
+// Безопасная альтернатива - reduceOption
+List.empty[Int].reduceOption(_ + _)  // None
+numbers.reduceOption(_ + _)          // Some(15)
+
+// reduceLeft vs reduceRight
+List(1, 2, 3).reduceLeft(_ - _)   // (1 - 2) - 3 = -4
+List(1, 2, 3).reduceRight(_ - _)  // 1 - (2 - 3) = 2
+```
+
+---
+
+**14.5. Другие полезные higher-order functions**
+
+```scala
+val numbers = List(1, 2, 3, 4, 5)
+
+// filter - отбор элементов
+numbers.filter(_ % 2 == 0)  // List(2, 4)
+
+// filterNot - отбор элементов НЕ удовлетворяющих условию
+numbers.filterNot(_ % 2 == 0)  // List(1, 3, 5)
+
+// find - поиск первого элемента
+numbers.find(_ > 3)  // Some(4)
+numbers.find(_ > 10) // None
+
+// exists - проверка существования
+numbers.exists(_ > 3)  // true
+numbers.exists(_ > 10) // false
+
+// forall - проверка для всех
+numbers.forall(_ > 0)  // true
+numbers.forall(_ > 3)  // false
+
+// partition - разделение на два списка
+numbers.partition(_ % 2 == 0)
+// (List(2, 4), List(1, 3, 5))
+
+// groupBy - группировка
+numbers.groupBy(_ % 2)
+// Map(0 -> List(2, 4), 1 -> List(1, 3, 5))
+
+// collect - комбинация filter + map
+numbers.collect {
+  case x if x % 2 == 0 => x * 10
+}
+// List(20, 40)
+
+// takeWhile / dropWhile
+numbers.takeWhile(_ < 4)  // List(1, 2, 3)
+numbers.dropWhile(_ < 4)  // List(4, 5)
+
+// span - комбинация takeWhile + dropWhile
+numbers.span(_ < 4)  // (List(1, 2, 3), List(4, 5))
+```
+
+---
+
+##### 15. Function Composition (Композиция функций)
+
+**Определение:**
+
+Композиция функций - это создание новой функции путем последовательного применения других функций.
+
+**15.1. andThen - применение слева направо**
+
+```scala
+val f: Int => Int = _ * 2      // умножить на 2
+val g: Int => String = _.toString  // преобразовать в строку
+
+// andThen: сначала f, потом g
+val h = f andThen g
+h(21)  // f(21) = 42, g(42) = "42"
+
+// Эквивалентно:
+val h2 = (x: Int) => g(f(x))
+```
+
+**15.2. compose - применение справа налево**
+
+```scala
+val f: Int => Int = _ * 2
+val g: Int => String = _.toString
+
+// compose: сначала g, потом f (обратный порядок!)
+val parseAndDouble = f compose g.toInt
+// parseAndDouble("21") не работает напрямую
+
+// Правильный пример:
+val parseInt: String => Int = _.toInt
+val double: Int => Int = _ * 2
+
+val parseAndDouble = double compose parseInt
+parseAndDouble("21")  // parseInt("21") = 21, double(21) = 42
+```
+
+**Разница между andThen и compose:**
+
+```scala
+val f: Int => Int = _ + 1      // +1
+val g: Int => Int = _ * 2      // *2
+
+(f andThen g)(10)  // f(10) = 11, g(11) = 22
+(f compose g)(10)  // g(10) = 20, f(20) = 21
+
+// andThen читается слева направо (интуитивно)
+// compose читается справа налево (математически)
+```
+
+**Цепочка композиций:**
+
+```scala
+val trim: String => String = _.trim
+val toLower: String => String = _.toLowerCase
+val capitalize: String => String = s => s.head.toUpper + s.tail
+
+val normalize = trim andThen toLower andThen capitalize
+
+normalize("  HELLO world  ")  // "Hello world"
+
+// Или используя множественные andThen
+val pipeline = List(trim, toLower, capitalize)
+  .reduce(_ andThen _)
+
+pipeline("  HELLO world  ")  // "Hello world"
+```
+
+**Композиция с Option:**
+
+```scala
+def parseIntOpt(s: String): Option[Int] = 
+  try Some(s.toInt) catch { case _: Exception => None }
+
+def isPositive(n: Int): Option[Int] = 
+  if (n > 0) Some(n) else None
+
+def sqrt(n: Int): Option[Double] = 
+  Some(math.sqrt(n))
+
+// Kleisli composition (композиция монадических функций)
+def composeOpt[A, B, C](
+  f: A => Option[B],
+  g: B => Option[C]
+): A => Option[C] = { a =>
+  f(a).flatMap(g)
+}
+
+val parsePositive = composeOpt(parseIntOpt, isPositive)
+parsePositive("42")   // Some(42)
+parsePositive("-10")  // None
+parsePositive("abc")  // None
+```
+
+**Function composition в функциональном стиле:**
+
+```scala
+// Вместо императивного:
+def processData(data: String): String = {
+  val trimmed = data.trim
+  val lower = trimmed.toLowerCase
+  val capitalized = lower.head.toUpper + lower.tail
+  capitalized
+}
+
+// Функциональный стиль с композицией:
+val processData: String => String = 
+  ((_: String).trim) andThen 
+  ((_: String).toLowerCase) andThen 
+  (s => s.head.toUpper + s.tail)
+
+// Или с явными функциями:
+def trim(s: String): String = s.trim
+def toLower(s: String): String = s.toLowerCase
+def capitalize(s: String): String = s.head.toUpper + s.tail
+
+val processData2 = trim _ andThen toLower andThen capitalize
+```
+
+---
+
+##### 16. Currying и Partial Application
+
+**16.1. Currying - преобразование функции**
+
+**Определение:**
+
+Currying - это преобразование функции с несколькими аргументами в цепочку функций, каждая из которых принимает один аргумент.
+
+```scala
+// Обычная функция с двумя параметрами
+def add(x: Int, y: Int): Int = x + y
+add(2, 3)  // 5
+
+// Curried функция
+def addCurried(x: Int)(y: Int): Int = x + y
+addCurried(2)(3)  // 5
+
+// Можно применить частично
+val add2 = addCurried(2) _  // Int => Int
+add2(3)  // 5
+add2(10) // 12
+```
+
+**Автоматический currying:**
+
+```scala
+// Метод curried преобразует обычную функцию в curried
+val add: (Int, Int) => Int = _ + _
+val addCurried = add.curried  // Int => Int => Int
+
+addCurried(2)(3)  // 5
+
+val increment = addCurried(1)
+increment(10)  // 11
+
+// uncurried - обратная операция
+val addUncurried = addCurried.curried  // (Int, Int) => Int
+addUncurried(2, 3)  // 5
+```
+
+**Зачем нужен currying:**
+
+```scala
+// 1. Создание специализированных функций
+def multiply(x: Int)(y: Int): Int = x * y
+
+val double = multiply(2) _     // Int => Int
+val triple = multiply(3) _     // Int => Int
+val quadruple = multiply(4) _  // Int => Int
+
+List(1, 2, 3, 4, 5).map(double)  // List(2, 4, 6, 8, 10)
+
+// 2. Конфигурация функций
+def log(level: String)(message: String): Unit = 
+  println(s"[$level] $message")
+
+val info = log("INFO") _
+val error = log("ERROR") _
+val debug = log("DEBUG") _
+
+info("Application started")    // [INFO] Application started
+error("Connection failed")     // [ERROR] Connection failed
+
+// 3. Создание DSL
+def connect(host: String)(port: Int)(timeout: Int): Connection = ???
+
+val localConnection = connect("localhost") _
+val devConnection = localConnection(8080) _
+val devConn = devConnection(5000)
+```
+
+---
+
+**16.2. Partial Application - частичное применение**
+
+**Определение:**
+
+Partial application - это фиксирование некоторых аргументов функции для создания новой функции с меньшим количеством параметров.
+
+```scala
+// Обычная функция
+def sum(a: Int, b: Int, c: Int): Int = a + b + c
+
+// Частичное применение с placeholder _
+val sumWith5 = sum(5, _: Int, _: Int)
+sumWith5(2, 3)  // 10
+
+val sumWith5And2 = sum(5, 2, _: Int)
+sumWith5And2(3)  // 10
+
+// С curried функцией проще
+def sumCurried(a: Int)(b: Int)(c: Int): Int = a + b + c
+
+val partial1 = sumCurried(5) _           // (Int)(Int) => Int
+val partial2 = sumCurried(5)(2) _        // Int => Int
+val result = sumCurried(5)(2)(3)         // 10
+```
+
+**Практические примеры:**
+
+```scala
+// 1. Фильтрация с partial application
+def filter[A](list: List[A], predicate: A => Boolean): List[A] = 
+  list.filter(predicate)
+
+val numbers = List(1, 2, 3, 4, 5)
+
+val filterNumbers = filter(numbers, _: Int => Boolean)
+filterNumbers(_ > 3)      // List(4, 5)
+filterNumbers(_ % 2 == 0) // List(2, 4)
+
+// 2. Преобразование с фиксированной конфигурацией
+def convert(rate: Double, amount: Double): Double = amount * rate
+
+val usdToEur = convert(0.85, _: Double)
+val usdToGbp = convert(0.73, _: Double)
+
+usdToEur(100)  // 85.0
+usdToGbp(100)  // 73.0
+
+// 3. HTTP requests с фиксированными заголовками
+def makeRequest(
+  url: String,
+  headers: Map[String, String],
+  body: String
+): Response = ???
+
+val authenticatedRequest = makeRequest(
+  _: String,
+  Map("Authorization" -> "Bearer token123"),
+  _: String
+)
+
+authenticatedRequest("https://api.example.com/users", """{"name": "Alice"}""")
+```
+
+**Currying vs Partial Application:**
+
+```scala
+// Currying - преобразование структуры функции
+def add(x: Int, y: Int): Int = x + y
+val addCurried: Int => Int => Int = add.curried
+
+// Partial application - фиксирование аргументов
+val add5: Int => Int = add(5, _)
+val add5Curried: Int => Int = addCurried(5)
+
+// Оба дают одинаковый результат
+add5(3)        // 8
+add5Curried(3) // 8
+
+// Но currying позволяет более гибкое использование
+val addCurried2 = addCurried(2)      // Int => Int
+val addCurried2And3 = addCurried(2)(3)  // Int
+```
+
+---
+
+##### 17. Монады (Monad)
+
+**Краткий обзор (детали в разделе 11.4):**
+
+Монада - это паттерн для композиции вычислений в контексте. Любая монада должна иметь:
+1. `pure` (или `apply`) - помещает значение в контекст
+2. `flatMap` - позволяет последовательно композировать вычисления
+
+**17.1. Option - монада для опциональных значений**
+
+```scala
+// Option представляет значение, которое может отсутствовать
+val some: Option[Int] = Some(42)
+val none: Option[Int] = None
+
+// flatMap для композиции
+def div(x: Int, y: Int): Option[Int] = 
+  if (y == 0) None else Some(x / y)
+
+val result = for {
+  a <- div(10, 2)   // Some(5)
+  b <- div(20, 4)   // Some(5)
+  c <- div(a + b, 2) // Some(5)
+} yield c
+// Some(5)
+
+// Если хотя бы одна операция вернет None, весь результат будет None
+val result2 = for {
+  a <- div(10, 2)   // Some(5)
+  b <- div(20, 0)   // None - деление на ноль!
+  c <- div(a + b, 2) // не выполнится
+} yield c
+// None
+```
+
+**17.2. Either - монада для обработки ошибок**
+
+```scala
+// Either[A, B] - либо Left(A) с ошибкой, либо Right(B) с результатом
+def divide(x: Int, y: Int): Either[String, Int] = 
+  if (y == 0) Left("Division by zero")
+  else Right(x / y)
+
+def sqrt(x: Int): Either[String, Double] = 
+  if (x < 0) Left("Negative number")
+  else Right(math.sqrt(x))
+
+// Композиция с for-comprehension
+val computation = for {
+  a <- divide(10, 2)      // Right(5)
+  b <- divide(20, 4)      // Right(5)
+  c <- divide(a + b, 2)   // Right(5)
+  d <- sqrt(c)            // Right(2.236...)
+} yield d
+// Right(2.23606...)
+
+// При ошибке возвращается первый Left
+val failed = for {
+  a <- divide(10, 2)      // Right(5)
+  b <- divide(20, 0)      // Left("Division by zero")
+  c <- divide(a + b, 2)   // не выполнится
+} yield c
+// Left("Division by zero")
+```
+
+**17.3. Try - монада для обработки исключений**
+
+```scala
+import scala.util.{Try, Success, Failure}
+
+def parseIntTry(s: String): Try[Int] = Try(s.toInt)
+
+def safeDivide(x: Int, y: Int): Try[Int] = Try(x / y)
+
+// Композиция
+val result = for {
+  a <- parseIntTry("42")
+  b <- parseIntTry("2")
+  c <- safeDivide(a, b)
+} yield c
+// Success(21)
+
+val failed = for {
+  a <- parseIntTry("not a number")
+  b <- parseIntTry("2")
+  c <- safeDivide(a, b)
+} yield c
+// Failure(NumberFormatException)
+
+// Обработка ошибок
+result match {
+  case Success(value) => println(s"Result: $value")
+  case Failure(exception) => println(s"Error: ${exception.getMessage}")
+}
+```
+
+**17.4. Future - монада для асинхронных вычислений**
+
+```scala
+import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def fetchUser(id: Long): Future[User] = ???
+def fetchOrders(userId: Long): Future[List[Order]] = ???
+def calculateTotal(orders: List[Order]): Future[Double] = ???
+
+// Композиция асинхронных операций
+val totalFuture: Future[Double] = for {
+  user <- fetchUser(1)
+  orders <- fetchOrders(user.id)
+  total <- calculateTotal(orders)
+} yield total
+
+// Обработка результата
+totalFuture.onComplete {
+  case Success(total) => println(s"Total: $total")
+  case Failure(error) => println(s"Error: ${error.getMessage}")
+}
+```
+
+---
+
+##### 18. For-Comprehensions как syntactic sugar
+
+**Правила desugaring (развертывания):**
+
+```scala
+// Одна generator линия + yield → map
+for (x <- xs) yield f(x)
+// становится:
+xs.map(x => f(x))
+
+// Несколько generators + yield → flatMap + map
+for {
+  x <- xs
+  y <- ys
+} yield f(x, y)
+// становится:
+xs.flatMap(x => ys.map(y => f(x, y)))
+
+// С guard (if) → withFilter
+for {
+  x <- xs
+  if condition(x)
+} yield f(x)
+// становится:
+xs.withFilter(x => condition(x)).map(x => f(x))
+
+// Без yield → foreach
+for (x <- xs) action(x)
+// становится:
+xs.foreach(x => action(x))
+
+// С присваиванием
+for {
+  x <- xs
+  y = g(x)
+} yield f(x, y)
+// становится:
+xs.map(x => (x, g(x))).map { case (x, y) => f(x, y) }
+```
+
+**Практические примеры:**
+
+```scala
+// Комплексный for-comprehension
+for {
+  x <- List(1, 2, 3)
+  if x % 2 == 0
+  y = x * 10
+  z <- List(y, y * 2)
+} yield z
+
+// Развернутая версия:
+List(1, 2, 3)
+  .withFilter(x => x % 2 == 0)
+  .map(x => (x, x * 10))
+  .flatMap { case (x, y) => 
+    List(y, y * 2).map(z => z)
+  }
+// List(20, 40)
+```
+
+---
+
+##### 19. Recursion vs Tail Recursion
+
+**19.1. Обычная рекурсия**
+
+```scala
+// НЕ tail-recursive
+def factorial(n: Int): Int = 
+  if (n <= 1) 1
+  else n * factorial(n - 1)
+
+// Call stack:
+// factorial(5)
+//   5 * factorial(4)
+//     5 * (4 * factorial(3))
+//       5 * (4 * (3 * factorial(2)))
+//         5 * (4 * (3 * (2 * factorial(1))))
+//           5 * (4 * (3 * (2 * 1)))
+
+factorial(5)     // 120
+// factorial(10000)  // StackOverflowError!
+```
+
+**Проблема:** Каждый рекурсивный вызов добавляет новый stack frame. Для больших n - переполнение стека.
+
+**19.2. Tail Recursion (хвостовая рекурсия)**
+
+```scala
+// Tail-recursive - рекурсивный вызов в последней позиции
+@scala.annotation.tailrec
+def factorialTail(n: Int, acc: Int = 1): Int = 
+  if (n <= 1) acc
+  else factorialTail(n - 1, n * acc)
+
+// Компилятор оптимизирует в цикл:
+// var n = 5
+// var acc = 1
+// while (n > 1) {
+//   acc = n * acc
+//   n = n - 1
+// }
+// return acc
+
+factorialTail(5)      // 120
+factorialTail(10000)  // работает! Нет StackOverflow
+```
+
+**@tailrec аннотация:**
+
+```scala
+// Компилятор проверит, что функция действительно tail-recursive
+@tailrec
+def sum(list: List[Int], acc: Int = 0): Int = list match {
+  case Nil => acc
+  case head :: tail => sum(tail, acc + head)  // ✅ tail call
+}
+
+// Не скомпилируется - НЕ tail-recursive
+// @tailrec
+// def sumBad(list: List[Int]): Int = list match {
+//   case Nil => 0
+//   case head :: tail => head + sumBad(tail)  // ❌ NOT tail call
+// }
+// Error: could not optimize @tailrec annotated method
+```
+
+**Паттерны tail recursion:**
+
+```scala
+// 1. Аккумулятор
+@tailrec
+def length[A](list: List[A], acc: Int = 0): Int = list match {
+  case Nil => acc
+  case _ :: tail => length(tail, acc + 1)
+}
+
+// 2. Reverse с аккумулятором
+@tailrec
+def reverse[A](list: List[A], acc: List[A] = Nil): List[A] = list match {
+  case Nil => acc
+  case head :: tail => reverse(tail, head :: acc)
+}
+
+// 3. Fibonacci
+@tailrec
+def fibonacci(n: Int, prev: BigInt = 0, curr: BigInt = 1): BigInt = 
+  if (n == 0) prev
+  else fibonacci(n - 1, curr, prev + curr)
+
+// 4. FoldLeft через tail recursion
+@tailrec
+def foldLeft[A, B](list: List[A], acc: B)(f: (B, A) => B): B = list match {
+  case Nil => acc
+  case head :: tail => foldLeft(tail, f(acc, head))(f)
+}
+```
+
+**Mutual tail recursion:**
+
+```scala
+@tailrec
+def isEven(n: Int): Boolean = 
+  if (n == 0) true
+  else isOdd(n - 1)
+
+@tailrec
+def isOdd(n: Int): Boolean = 
+  if (n == 0) false
+  else isEven(n - 1)
+
+// ⚠️ Mutual recursion НЕ оптимизируется компилятором Scala
+// Будет StackOverflowError на больших n
+```
+
+---
+
+##### 20. Lazy Evaluation (Stream/LazyList)
+
+**20.1. Lazy evaluation - что это?**
+
+```scala
+// Eager evaluation - вычисляется сразу
+val eagerList = List(1, 2, 3).map { x =>
+  println(s"Computing $x")
+  x * 2
+}
+// Напечатает:
+// Computing 1
+// Computing 2
+// Computing 3
+
+// Lazy evaluation - вычисляется по требованию
+val lazyList = LazyList(1, 2, 3).map { x =>
+  println(s"Computing $x")
+  x * 2
+}
+// Ничего не печатает!
+
+lazyList.take(2).toList
+// Напечатает только:
+// Computing 1
+// Computing 2
+```
+
+**20.2. LazyList (ранее Stream в Scala 2.12)**
+
+```scala
+// Создание LazyList
+val lazy1 = LazyList(1, 2, 3)
+val lazy2 = LazyList.from(1)  // бесконечная последовательность 1, 2, 3, ...
+
+// #:: - ленивый cons operator
+val lazy3 = 1 #:: 2 #:: 3 #:: LazyList.empty
+
+// Бесконечные структуры данных
+lazy val fibonacci: LazyList[BigInt] = 
+  BigInt(0) #:: BigInt(1) #:: fibonacci.zip(fibonacci.tail).map {
+    case (a, b) => a + b
+  }
+
+fibonacci.take(10).toList
+// List(0, 1, 1, 2, 3, 5, 8, 13, 21, 34)
+
+// Бесконечная последовательность простых чисел
+def sieve(nums: LazyList[Int]): LazyList[Int] = 
+  nums.head #:: sieve(nums.tail.filter(_ % nums.head != 0))
+
+val primes = sieve(LazyList.from(2))
+primes.take(10).toList
+// List(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+```
+
+**20.3. Преимущества lazy evaluation**
+
+```scala
+// 1. Работа с бесконечными структурами
+val naturals = LazyList.from(1)
+naturals.take(5).toList  // List(1, 2, 3, 4, 5)
+
+// 2. Избежание ненужных вычислений
+val expensive = LazyList.from(1).map { x =>
+  Thread.sleep(100)  // дорогая операция
+  x * 2
+}
+
+expensive.take(3).toList  // вычисляются только 3 элемента
+// Занимает ~300ms вместо бесконечности
+
+// 3. Композиция трансформаций без промежуточных коллекций
+val result = LazyList.from(1)
+  .map(_ * 2)
+  .filter(_ % 3 == 0)
+  .map(_.toString)
+  .take(5)
+  .toList
+// Вычисляется за один проход!
+
+// 4. Short-circuit evaluation
+val found = LazyList.from(1).find(_ > 1000000)
+// Останавливается как только нашли первый элемент
+```
+
+**20.4. View - lazy обертка над коллекциями**
+
+```scala
+val numbers = (1 to 1000000).toList
+
+// Eager - создает промежуточные коллекции
+val result1 = numbers
+  .map(_ * 2)      // создается новый List
+  .filter(_ % 3 == 0)  // создается еще один List
+  .map(_.toString) // и еще один List
+  .take(10)
+
+// Lazy - используем view
+val result2 = numbers.view
+  .map(_ * 2)
+  .filter(_ % 3 == 0)
+  .map(_.toString)
+  .take(10)
+  .toList  // материализация только в конце
+
+// view избегает создания промежуточных коллекций
+// и может остановиться раньше (take(10))
+```
+
+**20.5. Memoization в LazyList**
+
+```scala
+// LazyList кеширует вычисленные элементы
+val expensive = LazyList.from(1).map { x =>
+  println(s"Computing $x")
+  x * 2
+}
+
+val first5 = expensive.take(5).toList
+// Печатает: Computing 1, 2, 3, 4, 5
+
+val first10 = expensive.take(10).toList
+// Печатает только: Computing 6, 7, 8, 9, 10
+// Элементы 1-5 уже закешированы!
+
+// ⚠️ Осторожно: кеширование использует память
+val hugeLazy = LazyList.from(1).take(1000000)
+hugeLazy.last  // вычислит и закеширует все 1000000 элементов!
+```
+
+---
 
 **Практика:**
 
@@ -4112,10 +6216,10 @@ def compose[A, B, C](f: A => Option[B], g: B => Option[C]): A => Option[C] = ???
 
 **Вопросы:**
 
-- Что такое монада? Законы монад?
-- Разница между map и flatMap?
-- Что такое Applicative? Разница с Monad?
-- Как работает @tailrec?
+- [Что такое монада? Законы монад?](#134-монада-monad) (см. также раздел [17. Монады](#17-монады-monad))
+- [Разница между map и flatMap?](#142-map---преобразование-элементов) и [14.3. flatMap](#143-flatmap---преобразование-с-распаковкой)
+- [Что такое Applicative? Разница с Monad?](#133-аппликативный-функтор-applicative)
+- [Как работает @tailrec?](#192-tail-recursion-хвостовая-рекурсия)
 
 ---
 
