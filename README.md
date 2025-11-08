@@ -3544,20 +3544,6 @@ createUser("Alice", 30, "alice@example.com")  // Some(User(...))
 createUser("", 30, "alice@example.com")       // None
 ```
 
-**Applicative vs Monad:**
-```scala
-// Applicative - независимые вычисления (можно параллелить)
-def fetchUserApplicative(id1: Int, id2: Int): Option[(User, User)] = 
-  (fetchUser(id1), fetchUser(id2)).tupled  // параллельно
-
-// Monad - зависимые вычисления (последовательно)
-def fetchUserMonad(id: Int): Option[User] = 
-  for {
-    user <- fetchUser(id)         // сначала получаем user
-    friend <- fetchUser(user.friendId)  // затем используем его данные
-  } yield friend
-```
-
 ---
 
 **11.4. Монада (Monad)**
@@ -3740,6 +3726,21 @@ val program: IO[Unit] = for {
 } yield ()
 ```
 
+**Разница Applicative vs Monad:**
+```scala
+// Applicative - независимые вычисления
+// Можно распараллелить!
+val app: Option[Int] = 
+  (Some(2), Some(3), Some(4)).mapN(_ + _ + _)
+
+// Monad - зависимые вычисления
+// Нельзя распараллелить (y зависит от x)
+val mon: Option[Int] = for
+  x <- readUser(id)
+  y <- readOrders(x.id)  // зависит от x!
+yield y.total
+```
+
 ---
 
 **11.5. Natural Transformation (Естественное преобразование)**
@@ -3820,17 +3821,44 @@ val tryToEither: Try ~> Either[Throwable, *] =
 
 **11.6. Monoid (Моноид)**
 
-**Определение:**
+**Математическое определение:** Моноид - это алгебраическая структура (M, •, e) где:
+- M - множество
+- • - бинарная ассоциативная операция: M × M → M
+- e - нейтральный элемент
 
+**Определение:**
 Моноид - это алгебраическая структура с:
 1. Бинарной ассоциативной операцией `combine`
 2. Нейтральным элементом `empty`
 
+**Законы моноида:**
+1. Ассоциативность: `combine(x, combine(y, z)) == combine(combine(x, y), z)`
+2. Идентичность: `combine(x, empty) == x == combine(empty, x)`
+
 ```scala
-trait Monoid[A] {
-  def empty: A
-  def combine(x: A, y: A): A
-}
+trait Monoid[A]:
+  def empty: A                        // нейтральный элемент
+  def combine(x: A, y: A): A          // бинарная операция
+
+// Примеры моноидов
+given Monoid[Int] with
+  def empty: Int = 0
+  def combine(x: Int, y: Int): Int = x + y
+
+given Monoid[String] with
+  def empty: String = ""
+  def combine(x: String, y: String): String = x + y
+
+given [A]: Monoid[List[A]] with
+  def empty: List[A] = Nil
+  def combine(x: List[A], y: List[A]): List[A] = x ++ y
+
+// Использование
+def combineAll[A](list: List[A])(using m: Monoid[A]): A =
+  list.foldLeft(m.empty)(m.combine)
+
+combineAll(List(1, 2, 3, 4))  // 10
+combineAll(List("a", "b", "c"))  // "abc"
 
 // Законы моноида:
 // 1. Associativity: combine(combine(x, y), z) == combine(x, combine(y, z))
