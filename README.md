@@ -71,10 +71,10 @@
    - [7.9. Практические примеры](#79-практические-примеры)
 
 8. [Implicit Conversions и Implicit Parameters](#8-implicit-conversions-и-implicit-parameters)
-   - Implicit conversions
-   - Implicit parameters
-   - Implicit resolution rules
-   - Type Class pattern
+   - [8.1. Implicit conversions](#81-implicit-conversions)
+   - [8.2. Implicit parameters](#82-implicit-parameters)
+   - [8.3. Implicit resolution rules](#83-implicit-resolution-rules)
+   - [8.4. Type Class pattern](#84-type-class-pattern-с-implicit)
 
 9. [Type Inference и Type Annotations](#9-type-inference-и-type-annotations)
    - Вывод типов
@@ -2622,7 +2622,8 @@ val userService = new UserService()  // implicit параметры подста
 
 ##### 8. Implicit Conversions и Implicit Parameters
 
-**Implicit Conversions:**
+###### 8.1. Implicit Conversions
+
 ```scala
 // Implicit conversion function
 implicit def intToString(x: Int): String = x.toString
@@ -2643,7 +2644,8 @@ implicit class StringOps(s: String) {
 1 until 10       // метод из RichInt
 ```
 
-**Implicit Parameters:**
+###### 8.2. Implicit Parameters
+
 ```scala
 // Определение функции с implicit параметром
 def greet(name: String)(implicit greeting: String): String =
@@ -2665,7 +2667,7 @@ def printSorted[A](list: List[A])(implicit ord: Ordering[A]): Unit = {
 }
 ```
 
-**Implicit resolution rules:**
+###### 8.3. Implicit resolution rules
 ```scala
 // 1. Локальный scope или наследованный
 implicit val x: Int = 42
@@ -2691,7 +2693,8 @@ print(42)  // компилятор находит implicit в companion object
 // Локальные > Explicit imports > Companion object
 ```
 
-**Type Class pattern с implicit:**
+###### 8.4. Type Class pattern с implicit
+
 ```scala
 // Type class
 trait JsonSerializer[A] {
