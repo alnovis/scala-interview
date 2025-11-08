@@ -3714,8 +3714,23 @@ val program: IO[Unit] = for {
 
 **11.5. Natural Transformation (Естественное преобразование)**
 
-**Определение:**
+**Определение 1:** 
+Натуральное преобразование η между функторами F и G - это семейство морфизмов:
+```
+η_X: F(X) → G(X) для каждого объекта X
+```
 
+**Коммутативная диаграмма:**
+```
+F(X) ---η_X---> G(X)
+ |               |
+F(f)           G(f)
+ |               |
+ v               v
+F(Y) ---η_Y---> G(Y)
+```
+
+**Определение 2:**
 Natural Transformation - это преобразование между функторами, которое сохраняет структуру.
 
 ```scala
@@ -3729,6 +3744,13 @@ type ~>[F[_], G[_]] = NaturalTransformation[F, G]
 
 // Закон естественности:
 // G.map(transform(fa))(f) == transform(F.map(fa)(f))
+```
+
+**В Scala:**
+```scala
+// Natural transformation as ~> (type lambda)
+trait ~>[F[_], G[_]]:
+  def apply[A](fa: F[A]): G[A]
 ```
 
 **Примеры:**
