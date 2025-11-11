@@ -9012,6 +9012,1232 @@ class RateLimiter(maxRequests: Int, per: Duration) {
 - Free Monad
 - Tagless Final
 
+
+**📖 Теоретические материалы:**
+
+#### 28.1. Semigroup - Полугруппа
+
+**Определение:**
+
+Semigroup - это алгебраическая структура с одной ассоциативной бинарной операцией `combine`.
+
+**Законы Semigroup:**
+```scala
+// Ассоциативность
+combine(a, combine(b, c)) == combine(combine(a, b), c)
+```
+
+**Примеры в Cats:**
+
+```scala
+import cats.Semigroup
+import cats.implicits._
+
+// 1. Semigroup для Int с операцией сложения
+val intSemigroup: Semigroup[Int] = Semigroup[Int]
+intSemigroup.combine(2, 3)  // 5
+
+// 2. Использование синтаксиса |+|
+2 |+| 3  // 5
+
+// 3. Semigroup для String (конкатенация)
+"Hello" |+| " " |+| "World"  // "Hello World"
+
+// 4. Semigroup для List
+List(1, 2) |+| List(3, 4)  // List(1, 2, 3, 4)
+
+// 5. Semigroup для Option
+Option(2) |+| Option(3)     // Some(5)
+Option(2) |+| None          // Some(2)
+None |+| Option(3)          // Some(3)
+
+// 6. Semigroup для Map (объединение с combine значений)
+Map("a" -> 1, "b" -> 2) |+| Map("b" -> 3, "c" -> 4)
+// Map("a" -> 1, "b" -> 5, "c" -> 4)
+```
+
+**Создание собственного Semigroup:**
+
+```scala
+case class Stats(count: Int, sum: Double, min: Double, max: Double)
+
+implicit val statsSemigroup: Semigroup[Stats] = new Semigroup[Stats] {
+  def combine(x: Stats, y: Stats): Stats = Stats(
+    count = x.count + y.count,
+    sum = x.sum + y.sum,
+    min = math.min(x.min, y.min),
+    max = math.max(x.max, y.max)
+  )
+}
+
+// Использование
+val stats1 = Stats(10, 150.0, 5.0, 25.0)
+val stats2 = Stats(15, 300.0, 3.0, 30.0)
+stats1 |+| stats2
+// Stats(25, 450.0, 3.0, 30.0)
+
+// Combine списка
+List(stats1, stats2).reduce(_ |+| _)
+```
+
+**Semigroup в Scalaz:**
+
+```scala
+import scalaz._
+import Scalaz._
+
+// В Scalaz используется operator |+| точно так же
+2 |+| 3  // 5
+"Hello" |+| " World"
+
+// Определение Semigroup в Scalaz
+implicit val statsSemigroup: Semigroup[Stats] = new Semigroup[Stats] {
+  def append(x: Stats, y: => Stats): Stats = Stats(
+    count = x.count + y.count,
+    sum = x.sum + y.sum,
+    min = math.min(x.min, y.min),
+    max = math.max(x.max, y.max)
+  )
+}
+```
+
+---
+
+#### 28.2. Monoid - Моноид
+
+**Определение:**
+
+Monoid расширяет Semigroup, добавляя нейтральный элемент (identity/empty).
+
+**Законы Monoid:**
+```scala
+// Наследует ассоциативность от Semigroup
+combine(a, combine(b, c)) == combine(combine(a, b), c)
+
+// Левая идентичность
+combine(empty, a) == a
+
+// Правая идентичность
+combine(a, empty) == a
+```
+
+**Примеры в Cats:**
+
+```scala
+import cats.Monoid
+import cats.implicits._
+
+// 1. Monoid для Int
+Monoid[Int].empty  // 0
+Monoid[Int].combine(2, 3)  // 5
+
+// 2. Monoid для String
+Monoid[String].empty  // ""
+"Hello" |+| " " |+| "World"
+
+// 3. Monoid для List
+Monoid[List[Int]].empty  // List()
+List(1, 2) |+| List(3, 4)  // List(1, 2, 3, 4)
+
+// 4. Monoid для Option
+Monoid[Option[Int]].empty  // None
+Option(2) |+| None |+| Option(3)  // Some(5)
+
+// 5. Monoid для Map
+Monoid[Map[String, Int]].empty  // Map()
+Map("a" -> 1) |+| Map("b" -> 2)  // Map("a" -> 1, "b" -> 2)
+
+// 6. combineAll для списка (fold с empty)
+List(1, 2, 3, 4).combineAll  // 10
+List.empty[Int].combineAll   // 0 (empty element)
+
+List("Hello", " ", "World").combineAll  // "Hello World"
+```
+
+**Создание собственного Monoid:**
+
+```scala
+case class Stats(count: Int, sum: Double, min: Double, max: Double)
+
+implicit val statsMonoid: Monoid[Stats] = new Monoid[Stats] {
+  def empty: Stats = Stats(0, 0.0, Double.MaxValue, Double.MinValue)
+  
+  def combine(x: Stats, y: Stats): Stats = {
+    // Специальная обработка для пустых значений
+    if (x == empty) y
+    else if (y == empty) x
+    else Stats(
+      count = x.count + y.count,
+      sum = x.sum + y.sum,
+      min = math.min(x.min, y.min),
+      max = math.max(x.max, y.max)
+    )
+  }
+}
+
+// Использование
+val stats = List(
+  Stats(5, 100.0, 10.0, 30.0),
+  Stats(3, 60.0, 15.0, 25.0),
+  Stats(7, 140.0, 8.0, 28.0)
+)
+
+stats.combineAll
+// Stats(15, 300.0, 8.0, 30.0)
+
+// С пустым списком - вернет empty
+List.empty[Stats].combineAll
+// Stats(0, 0.0, Double.MaxValue, Double.MinValue)
+```
+
+**Практическое применение - агрегация данных:**
+
+```scala
+case class WordCount(words: Map[String, Int], total: Int)
+
+implicit val wordCountMonoid: Monoid[WordCount] = new Monoid[WordCount] {
+  def empty: WordCount = WordCount(Map.empty, 0)
+  
+  def combine(x: WordCount, y: WordCount): WordCount = WordCount(
+    words = x.words |+| y.words,  // Map Monoid объединяет значения
+    total = x.total + y.total
+  )
+}
+
+def countWords(text: String): WordCount = {
+  val words = text.toLowerCase.split("\\s+").toList
+  WordCount(
+    words = words.groupMapReduce(identity)(_ => 1)(_ + _),
+    total = words.length
+  )
+}
+
+val texts = List(
+  "hello world",
+  "hello scala",
+  "world of scala"
+)
+
+texts.map(countWords).combineAll
+// WordCount(Map("hello" -> 2, "world" -> 2, "scala" -> 2, "of" -> 1), 7)
+```
+
+**Monoid в Scalaz:**
+
+```scala
+import scalaz._
+import Scalaz._
+
+// В Scalaz Monoid определяется аналогично
+implicit val statsMonoid: Monoid[Stats] = new Monoid[Stats] {
+  def zero: Stats = Stats(0, 0.0, Double.MaxValue, Double.MinValue)
+  
+  def append(x: Stats, y: => Stats): Stats = {
+    if (x == zero) y
+    else if (y == zero) x
+    else Stats(
+      count = x.count + y.count,
+      sum = x.sum + y.sum,
+      min = math.min(x.min, y.min),
+      max = math.max(x.max, y.max)
+    )
+  }
+}
+
+// Использование
+List(1, 2, 3).suml  // 6 (sum using Monoid)
+```
+
+**Сравнение Semigroup и Monoid:**
+
+| Свойство | Semigroup | Monoid |
+|----------|-----------|--------|
+| Операция | combine | combine + empty |
+| Законы | Ассоциативность | Ассоциативность + Identity |
+| Применение | Объединение без начального значения | Fold/reduce с начальным значением |
+| Пример | NonEmptyList | List |
+
+---
+
+#### 28.3. Functor - Функтор
+
+**Определение:**
+
+Functor - это type class, который определяет операцию `map`, позволяющую применять функцию к значению внутри контекста, сохраняя контекст.
+
+**Законы Functor:**
+
+```scala
+// 1. Identity (тождественность)
+fa.map(x => x) == fa
+fa.map(identity) == fa
+
+// 2. Composition (композиция)
+fa.map(f).map(g) == fa.map(f.andThen(g))
+fa.map(f).map(g) == fa.map(x => g(f(x)))
+```
+
+**Примеры в Cats:**
+
+```scala
+import cats.Functor
+import cats.implicits._
+
+// 1. Functor для Option
+val opt: Option[Int] = Some(5)
+opt.map(_ * 2)  // Some(10)
+None.map(_ * 2) // None
+
+// 2. Functor для List
+List(1, 2, 3).map(_ * 2)  // List(2, 4, 6)
+
+// 3. Functor для Either
+val right: Either[String, Int] = Right(5)
+right.map(_ * 2)  // Right(10)
+
+val left: Either[String, Int] = Left("error")
+left.map(_ * 2)   // Left("error")
+
+// 4. Использование Functor type class напрямую
+def double[F[_]: Functor](fa: F[Int]): F[Int] = 
+  Functor[F].map(fa)(_ * 2)
+
+double(Option(5))      // Some(10)
+double(List(1, 2, 3))  // List(2, 4, 6)
+double(Right(5))       // Right(10)
+```
+
+**Создание собственного Functor:**
+
+```scala
+// Пример: Tree структура данных
+sealed trait Tree[+A]
+case class Leaf[A](value: A) extends Tree[A]
+case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+implicit val treeFunctor: Functor[Tree] = new Functor[Tree] {
+  def map[A, B](fa: Tree[A])(f: A => B): Tree[B] = fa match {
+    case Leaf(value) => Leaf(f(value))
+    case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+  }
+}
+
+// Использование
+val tree: Tree[Int] = Branch(
+  Leaf(1),
+  Branch(Leaf(2), Leaf(3))
+)
+
+tree.map(_ * 2)
+// Branch(Leaf(2), Branch(Leaf(4), Leaf(6)))
+```
+
+**Functor для типов с двумя параметрами:**
+
+```scala
+// Either[A, B] - Functor по второму параметру (B)
+val either: Either[String, Int] = Right(5)
+either.map(_ * 2)  // Right(10)
+
+// Bifunctor - map по обоим параметрам
+import cats.implicits._
+
+either.bimap(
+  err => s"Error: $err",
+  value => value * 2
+)  // Right(10)
+
+Left("oops").bimap(
+  err => s"Error: $err",
+  value => value * 2
+)  // Left("Error: oops")
+```
+
+**Functor composition:**
+
+```scala
+// Композиция функторов
+val listOfOptions: List[Option[Int]] = List(Some(1), None, Some(3))
+
+// map дважды для nested структур
+listOfOptions.map(_.map(_ * 2))  
+// List(Some(2), None, Some(6))
+
+// Или используя Functor композицию
+import cats.data.Nested
+
+val nested = Nested(listOfOptions)
+nested.map(_ * 2).value
+// List(Some(2), None, Some(6))
+```
+
+**Functor в Scalaz:**
+
+```scala
+import scalaz._
+import Scalaz._
+
+// В Scalaz Functor работает аналогично
+val opt: Option[Int] = Some(5)
+Functor[Option].map(opt)(_ * 2)  // Some(10)
+
+// Инфиксный синтаксис
+opt.map(_ * 2)  // Some(10)
+
+// Functor laws проверка
+// Identity
+opt.map(identity) == opt
+
+// Composition
+val f = (_: Int) * 2
+val g = (_: Int) + 10
+opt.map(f).map(g) == opt.map(f andThen g)
+```
+
+---
+
+#### 28.4. Applicative - Аппликативный функтор
+
+**Определение:**
+
+Applicative расширяет Functor, добавляя возможность:
+1. Оборачивать чистое значение в контекст (`pure`)
+2. Применять функцию в контексте к значению в контексте (`ap`)
+
+**Законы Applicative:**
+
+```scala
+// 1. Identity
+pure(identity).ap(v) == v
+
+// 2. Homomorphism (гомоморфизм)
+pure(f).ap(pure(x)) == pure(f(x))
+
+// 3. Interchange
+u.ap(pure(y)) == pure((f: A => B) => f(y)).ap(u)
+
+// 4. Composition
+pure(compose).ap(u).ap(v).ap(w) == u.ap(v.ap(w))
+```
+
+**Примеры в Cats:**
+
+```scala
+import cats.Applicative
+import cats.implicits._
+
+// 1. pure - поместить значение в контекст
+Applicative[Option].pure(5)  // Some(5)
+Applicative[List].pure(5)    // List(5)
+
+// 2. ap - применить функцию в контексте
+val optFunc: Option[Int => Int] = Some(_ * 2)
+val optValue: Option[Int] = Some(5)
+optFunc.ap(optValue)  // Some(10)
+
+// 3. mapN - применить функцию к нескольким значениям в контексте
+(Option(1), Option(2), Option(3)).mapN(_ + _ + _)  // Some(6)
+(Option(1), None, Option(3)).mapN(_ + _ + _)       // None
+
+// 4. tupled - объединить значения в кортеж
+(Option(1), Option("hello"), Option(3.0)).tupled
+// Some((1, "hello", 3.0))
+
+// 5. map2, map3, ... - apply function to 2, 3, ... values
+Applicative[Option].map2(Some(2), Some(3))(_ + _)  // Some(5)
+
+// 6. *> и <* - комбинирование с игнорированием результата
+Option(1) *> Option(2)  // Some(2) - игнорирует левое
+Option(1) <* Option(2)  // Some(1) - игнорирует правое
+```
+
+**Практическое применение - валидация:**
+
+```scala
+case class User(name: String, age: Int, email: String)
+
+def validateName(name: String): Option[String] =
+  if (name.nonEmpty) Some(name) else None
+
+def validateAge(age: Int): Option[Int] =
+  if (age > 0 && age < 150) Some(age) else None
+
+def validateEmail(email: String): Option[String] =
+  if (email.contains("@")) Some(email) else None
+
+// Использование Applicative для параллельной валидации
+def createUser(name: String, age: Int, email: String): Option[User] =
+  (validateName(name), validateAge(age), validateEmail(email)).mapN(User)
+
+createUser("John", 30, "john@example.com")
+// Some(User("John", 30, "john@example.com"))
+
+createUser("", 30, "john@example.com")  // None
+createUser("John", -5, "john@example.com")  // None
+```
+
+**Applicative с Either для накопления ошибок:**
+
+```scala
+import cats.data.ValidatedNec
+import cats.implicits._
+
+type ValidationResult[A] = ValidatedNec[String, A]
+
+def validateNameV(name: String): ValidationResult[String] =
+  if (name.nonEmpty) name.validNec
+  else "Name cannot be empty".invalidNec
+
+def validateAgeV(age: Int): ValidationResult[Int] =
+  if (age > 0) age.validNec
+  else "Age must be positive".invalidNec
+
+def validateEmailV(email: String): ValidationResult[String] =
+  if (email.contains("@")) email.validNec
+  else "Email must contain @".invalidNec
+
+def createUserV(name: String, age: Int, email: String): ValidationResult[User] =
+  (validateNameV(name), validateAgeV(age), validateEmailV(email)).mapN(User)
+
+createUserV("", -5, "invalid")
+// Invalid(NonEmptyChain("Name cannot be empty", "Age must be positive", "Email must contain @"))
+```
+
+**Applicative для независимых операций:**
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import cats.implicits._
+
+// Параллельное выполнение независимых Future
+def fetchUser(id: String): Future[User] = ???
+def fetchOrders(userId: String): Future[List[Order]] = ???
+def fetchPreferences(userId: String): Future[Preferences] = ???
+
+// Applicative позволяет запустить все параллельно
+def getUserData(id: String): Future[(User, List[Order], Preferences)] =
+  (fetchUser(id), fetchOrders(id), fetchPreferences(id)).tupled
+
+// Или с обработкой
+def getUserSummary(id: String): Future[Summary] =
+  (fetchUser(id), fetchOrders(id), fetchPreferences(id))
+    .mapN(Summary.apply)
+```
+
+**Applicative в Scalaz:**
+
+```scala
+import scalaz._
+import Scalaz._
+
+// pure
+Applicative[Option].point(5)  // Some(5)
+
+// ap
+val optFunc: Option[Int => Int] = Some(_ * 2)
+optFunc <*> Some(5)  // Some(10)
+
+// Применение к нескольким значениям
+(Some(2) |@| Some(3))(_ + _)  // Some(5)
+
+// С тремя значениями
+(Some(1) |@| Some(2) |@| Some(3))(_ + _ + _)  // Some(6)
+```
+
+**Разница между Functor и Applicative:**
+
+| Свойство | Functor | Applicative |
+|----------|---------|-------------|
+| Операция | map | pure, ap |
+| Функция | A => B | F[A => B] |
+| Количество контекстов | 1 (F[A]) | Несколько (F[A], F[B], ...) |
+| Независимость | Зависимые операции | Независимые операции |
+| Пример | opt.map(_ * 2) | (opt1, opt2).mapN(_ + _) |
+
+---
+
+#### 28.5. Monad - Монада
+
+**Определение:**
+
+Monad расширяет Applicative, добавляя операцию `flatMap`, которая позволяет создавать зависимые вычисления.
+
+**Законы Monad:**
+
+```scala
+// 1. Left Identity
+pure(a).flatMap(f) == f(a)
+
+// 2. Right Identity
+m.flatMap(pure) == m
+
+// 3. Associativity
+m.flatMap(f).flatMap(g) == m.flatMap(x => f(x).flatMap(g))
+```
+
+**Примеры в Cats:**
+
+```scala
+import cats.Monad
+import cats.implicits._
+
+// 1. flatMap - цепочка зависимых вычислений
+val opt: Option[Int] = Some(5)
+opt.flatMap(x => Some(x * 2))  // Some(10)
+
+// 2. flatMap с зависимостью от предыдущего результата
+def divide(a: Int, b: Int): Option[Int] =
+  if (b != 0) Some(a / b) else None
+
+Some(10).flatMap(x => divide(x, 2))  // Some(5)
+Some(10).flatMap(x => divide(x, 0))  // None
+
+// 3. Цепочка flatMap
+Some(10)
+  .flatMap(x => divide(x, 2))
+  .flatMap(x => divide(x, 5))  // Some(1)
+
+// 4. For-comprehension (синтаксический сахар для flatMap)
+for {
+  x <- Some(10)
+  y <- divide(x, 2)
+  z <- divide(y, 5)
+} yield z  // Some(1)
+
+// 5. flatten - объединить вложенные монады
+val nested: Option[Option[Int]] = Some(Some(5))
+nested.flatten  // Some(5)
+
+Some(None).flatten  // None
+```
+
+**Monad для Either - последовательная обработка ошибок:**
+
+```scala
+def validatePositive(x: Int): Either[String, Int] =
+  if (x > 0) Right(x) else Left("Must be positive")
+
+def validateEven(x: Int): Either[String, Int] =
+  if (x % 2 == 0) Right(x) else Left("Must be even")
+
+def validateSmall(x: Int): Either[String, Int] =
+  if (x < 100) Right(x) else Left("Must be less than 100")
+
+// Цепочка валидаций (останавливается на первой ошибке)
+def validate(x: Int): Either[String, Int] = for {
+  positive <- validatePositive(x)
+  even <- validateEven(positive)
+  small <- validateSmall(even)
+} yield small
+
+validate(50)   // Right(50)
+validate(-2)   // Left("Must be positive")
+validate(3)    // Left("Must be even")
+validate(200)  // Left("Must be less than 100")
+```
+
+**Monad для List - недетерминированные вычисления:**
+
+```scala
+// flatMap для List создает все возможные комбинации
+val numbers = List(1, 2, 3)
+val letters = List("a", "b")
+
+for {
+  num <- numbers
+  letter <- letters
+} yield s"$num$letter"
+// List("1a", "1b", "2a", "2b", "3a", "3b")
+
+// Эквивалентно
+numbers.flatMap(num => 
+  letters.map(letter => s"$num$letter")
+)
+```
+
+**Monad для Future - асинхронные вычисления:**
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def getUser(id: String): Future[User] = ???
+def getOrders(user: User): Future[List[Order]] = ???
+def calculateTotal(orders: List[Order]): Future[Double] = ???
+
+// Цепочка асинхронных операций
+def getUserTotal(id: String): Future[Double] = for {
+  user <- getUser(id)
+  orders <- getOrders(user)
+  total <- calculateTotal(orders)
+} yield total
+```
+
+**Использование Monad type class напрямую:**
+
+```scala
+def processData[F[_]: Monad](data: F[Int]): F[String] = {
+  val M = Monad[F]
+  M.flatMap(data)(x => M.pure(s"Result: ${x * 2}"))
+}
+
+// Или используя синтаксис
+def processData2[F[_]: Monad](data: F[Int]): F[String] =
+  data.flatMap(x => Monad[F].pure(s"Result: ${x * 2}"))
+
+processData(Option(5))      // Some("Result: 10")
+processData(List(1, 2, 3))  // List("Result: 2", "Result: 4", "Result: 6")
+processData(Right(5))       // Right("Result: 10")
+```
+
+**Разница между Applicative и Monad:**
+
+| Свойство | Applicative | Monad |
+|----------|-------------|-------|
+| Операция | ap, mapN | flatMap |
+| Вычисления | Независимые | Зависимые |
+| Результат предыдущей операции | Не влияет на следующую | Влияет на следующую |
+| Параллелизм | Может выполняться параллельно | Последовательно |
+| Накопление ошибок | Может накапливать (Validated) | Останавливается на первой |
+
+---
+
+#### 28.6. Monad Transformers - Трансформеры монад
+
+**Проблема композиции монад:**
+
+```scala
+// Вложенные монады сложно композировать
+val result: Future[Option[Int]] = Future.successful(Some(5))
+
+// Нужно делать nested map/flatMap
+result.flatMap {
+  case Some(x) => Future.successful(Some(x * 2))
+  case None => Future.successful(None)
+}
+```
+
+**Решение: Monad Transformers**
+
+---
+
+#### 28.6.1. OptionT - Option Transformer
+
+```scala
+import cats.data.OptionT
+import cats.implicits._
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+case class User(id: String, name: String)
+case class Order(id: String, userId: String, total: Double)
+
+def getUser(id: String): Future[Option[User]] = ???
+def getOrders(user: User): Future[Option[List[Order]]] = ???
+def calculateTotal(orders: List[Order]): Future[Option[Double]] = ???
+
+// Без OptionT - сложная композиция
+def getUserTotal(id: String): Future[Option[Double]] = {
+  getUser(id).flatMap {
+    case Some(user) => 
+      getOrders(user).flatMap {
+        case Some(orders) => calculateTotal(orders)
+        case None => Future.successful(None)
+      }
+    case None => Future.successful(None)
+  }
+}
+
+// С OptionT - простая композиция
+def getUserTotalWithOptionT(id: String): Future[Option[Double]] = {
+  val result = for {
+    user <- OptionT(getUser(id))
+    orders <- OptionT(getOrders(user))
+    total <- OptionT(calculateTotal(orders))
+  } yield total
+  
+  result.value  // Извлекаем Future[Option[Double]]
+}
+```
+
+**OptionT constructors:**
+
+```scala
+// 1. Из Future[Option[A]]
+OptionT(Future.successful(Some(5)))
+
+// 2. Из чистого значения
+OptionT.pure[Future](5)  // Future[Some(5)]
+
+// 3. Из Option
+OptionT.fromOption[Future](Some(5))  // Future[Some(5)]
+
+// 4. None
+OptionT.none[Future, Int]  // Future[None]
+
+// 5. Lift значения в контекст
+OptionT.liftF(Future.successful(5))  // Future[Some(5)]
+```
+
+---
+
+#### 28.6.2. EitherT - Either Transformer
+
+```scala
+import cats.data.EitherT
+import cats.implicits._
+
+type Error = String
+
+def validateUser(id: String): Future[Either[Error, User]] = ???
+def validateOrder(user: User): Future[Either[Error, Order]] = ???
+def processPayment(order: Order): Future[Either[Error, Payment]] = ???
+
+// Без EitherT
+def processOrder(id: String): Future[Either[Error, Payment]] = {
+  validateUser(id).flatMap {
+    case Right(user) =>
+      validateOrder(user).flatMap {
+        case Right(order) =>
+          processPayment(order)
+        case Left(err) => Future.successful(Left(err))
+      }
+    case Left(err) => Future.successful(Left(err))
+  }
+}
+
+// С EitherT
+def processOrderWithEitherT(id: String): Future[Either[Error, Payment]] = {
+  val result = for {
+    user <- EitherT(validateUser(id))
+    order <- EitherT(validateOrder(user))
+    payment <- EitherT(processPayment(order))
+  } yield payment
+  
+  result.value
+}
+```
+
+**EitherT constructors:**
+
+```scala
+// 1. Из Future[Either[E, A]]
+EitherT(Future.successful(Right(5)))
+
+// 2. Из чистого значения (Right)
+EitherT.pure[Future, String](5)  // Future[Right(5)]
+
+// 3. Из Either
+EitherT.fromEither[Future](Right(5))  // Future[Right(5)]
+
+// 4. Left значение
+EitherT.leftT[Future, Int]("error")  // Future[Left("error")]
+
+// 5. Right значение
+EitherT.rightT[Future, String](5)  // Future[Right(5)]
+
+// 6. Lift F[A] в F[Right[A]]
+EitherT.liftF(Future.successful(5))  // Future[Right(5)]
+```
+
+---
+
+#### 28.7. Validated vs Either
+
+**Either - fail-fast:**
+
+```scala
+case class Person(name: String, age: Int, email: String)
+
+def validateName(name: String): Either[String, String] =
+  if (name.nonEmpty) Right(name) else Left("Name is empty")
+
+def validateAge(age: Int): Either[String, Int] =
+  if (age >= 0 && age < 150) Right(age) else Left("Invalid age")
+
+def validateEmail(email: String): Either[String, String] =
+  if (email.contains("@")) Right(email) else Left("Invalid email")
+
+// Either останавливается на первой ошибке
+def createPerson(name: String, age: Int, email: String): Either[String, Person] =
+  for {
+    validName <- validateName(name)
+    validAge <- validateAge(age)
+    validEmail <- validateEmail(email)
+  } yield Person(validName, validAge, validEmail)
+
+createPerson("", -5, "invalid")
+// Left("Name is empty") - только первая ошибка!
+```
+
+**Validated - накопление ошибок:**
+
+```scala
+import cats.data.ValidatedNec
+import cats.implicits._
+
+type ValidationResult[A] = ValidatedNec[String, A]
+
+def validateNameNec(name: String): ValidationResult[String] =
+  if (name.nonEmpty) name.validNec else "Name is empty".invalidNec
+
+def validateAgeNec(age: Int): ValidationResult[Int] =
+  if (age >= 0 && age < 150) age.validNec else "Invalid age".invalidNec
+
+def validateEmailNec(email: String): ValidationResult[String] =
+  if (email.contains("@")) email.validNec else "Invalid email".invalidNec
+
+// Накапливаем ВСЕ ошибки
+def createPersonNec(name: String, age: Int, email: String): ValidationResult[Person] =
+  (validateNameNec(name), validateAgeNec(age), validateEmailNec(email))
+    .mapN(Person)
+
+createPersonNec("", -5, "invalid")
+// Invalid(NonEmptyChain("Name is empty", "Invalid age", "Invalid email"))
+// ВСЕ три ошибки!
+```
+
+**Когда использовать Either vs Validated:**
+
+| Сценарий | Either | Validated |
+|----------|--------|-----------|
+| Валидация формы | ❌ | ✅ - показать все ошибки |
+| Бизнес-логика с зависимыми шагами | ✅ | ❌ |
+| API валидация | ❌ | ✅ - вернуть все проблемы |
+| Sequential processing | ✅ | ❌ |
+| Независимые проверки | ❌ | ✅ |
+
+---
+
+#### 28.8. IO Monad
+
+**Проблема с побочными эффектами:**
+
+```scala
+// Этот код имеет побочные эффекты
+def saveToDatabase(user: User): Unit = {
+  database.save(user)
+  println(s"Saved $user")
+}
+
+// Проблемы:
+// 1. Выполняется немедленно (eager)
+// 2. Не композируется
+// 3. Нельзя отложить выполнение
+// 4. Сложно тестировать
+```
+
+**IO Monad - описание эффектов:**
+
+```scala
+import cats.effect.IO
+import cats.implicits._
+
+// IO описывает эффект, но НЕ выполняет его
+val printHello: IO[Unit] = IO {
+  println("Hello, World!")
+}
+
+// Ничего не напечатано! Это только описание.
+
+// Для выполнения нужно вызвать unsafeRunSync
+printHello.unsafeRunSync()  // Теперь напечатается
+
+// IO для чистых значений
+val pureValue: IO[Int] = IO.pure(42)
+
+// IO для вычислений
+val computation: IO[Int] = IO {
+  println("Computing...")
+  2 + 2
+}
+```
+
+**Композиция IO:**
+
+```scala
+def readLine: IO[String] = IO {
+  scala.io.StdIn.readLine()
+}
+
+def greet: IO[Unit] = for {
+  _ <- IO(println("What's your name?"))
+  name <- readLine
+  _ <- IO(println(s"Hello, $name!"))
+} yield ()
+
+// Выполнение
+greet.unsafeRunSync()
+```
+
+**Обработка ошибок в IO:**
+
+```scala
+// raiseError - создать IO с ошибкой
+val failing: IO[Int] = IO.raiseError(new RuntimeException("Oops!"))
+
+// handleErrorWith - обработать ошибку
+val handled: IO[Int] = failing.handleErrorWith { error =>
+  IO(println(s"Error: ${error.getMessage}")) *> IO.pure(0)
+}
+
+// attempt - преобразовать в Either
+val attempted: IO[Either[Throwable, Int]] = failing.attempt
+```
+
+**IO для работы с ресурсами:**
+
+```scala
+import cats.effect.{IO, Resource}
+import java.io._
+
+def fileResource(path: String): Resource[IO, BufferedReader] =
+  Resource.make(
+    // Acquire
+    IO(new BufferedReader(new FileReader(path)))
+  )(reader =>
+    // Release (вызывается всегда)
+    IO(reader.close()).handleErrorWith(_ => IO.unit)
+  )
+
+def readFile(path: String): IO[String] = {
+  fileResource(path).use { reader =>
+    IO {
+      Iterator.continually(reader.readLine())
+        .takeWhile(_ != null)
+        .mkString("\n")
+    }
+  }
+}
+```
+
+**IO vs Future:**
+
+| Свойство | IO | Future |
+|----------|----|----|
+| Evaluation | Lazy | Eager |
+| Referential transparency | ✅ | ❌ |
+| Retry | ✅ Легко | ❌ Сложно |
+| Cancellation | ✅ | ❌ |
+| Stack safety | ✅ | ❌ |
+| Testing | ✅ Легко | ❌ Нужны await |
+
+---
+
+#### 28.9. Free Monad
+
+**Проблема:**
+
+Жесткая связка логики с конкретной реализацией эффектов.
+
+**Free Monad - решение:**
+
+Free Monad позволяет:
+1. **Описать** программу как структуру данных (AST)
+2. **Интерпретировать** позже, возможно по-разному
+
+**Шаг 1: Определить алгебру (DSL):**
+
+```scala
+import cats.free.Free
+import cats.free.Free.liftF
+
+// Определяем операции
+sealed trait ConsoleOp[A]
+case class PrintLine(msg: String) extends ConsoleOp[Unit]
+case object ReadLine extends ConsoleOp[String]
+
+type Console[A] = Free[ConsoleOp, A]
+
+// Smart constructors
+def printLine(msg: String): Console[Unit] = 
+  liftF(PrintLine(msg))
+
+def readLine: Console[String] = 
+  liftF(ReadLine)
+```
+
+**Шаг 2: Написать программу:**
+
+```scala
+def program: Console[Unit] = for {
+  _ <- printLine("Enter your name:")
+  name <- readLine
+  _ <- printLine(s"Hello, $name!")
+} yield ()
+
+// Это просто структура данных!
+```
+
+**Шаг 3: Создать интерпретатор:**
+
+```scala
+import cats.~>
+import cats.Id
+import cats.effect.IO
+
+// Интерпретатор в IO
+val ioInterpreter: ConsoleOp ~> IO = new (ConsoleOp ~> IO) {
+  def apply[A](op: ConsoleOp[A]): IO[A] = op match {
+    case PrintLine(msg) => IO(println(msg))
+    case ReadLine => IO(scala.io.StdIn.readLine())
+  }
+}
+
+// Интерпретатор для тестирования
+def testInterpreter(inputs: List[String]): ConsoleOp ~> Id = {
+  var remaining = inputs
+  
+  new (ConsoleOp ~> Id) {
+    def apply[A](op: ConsoleOp[A]): Id[A] = op match {
+      case PrintLine(msg) => ()
+      case ReadLine =>
+        val input = remaining.head
+        remaining = remaining.tail
+        input
+    }
+  }
+}
+```
+
+**Шаг 4: Выполнить:**
+
+```scala
+// С реальным I/O
+program.foldMap(ioInterpreter).unsafeRunSync()
+
+// Для тестирования
+val result = program.foldMap(testInterpreter(List("Alice")))
+```
+
+**Преимущества Free Monad:**
+
+1. **Разделение concerns** - логика отдельно от интерпретации
+2. **Тестируемость** - можно создать test interpreter
+3. **Множественные интерпретации** - production, test, mock
+4. **Композируемость** - можно комбинировать DSL
+
+**Недостатки:**
+
+1. **Boilerplate** - много кода
+2. **Performance** - overhead
+3. **Сложность** - требует понимания
+
+---
+
+#### 28.10. Tagless Final
+
+**Альтернатива Free Monad:**
+
+Вместо AST используем type classes и higher-kinded types.
+
+**Пример: Console DSL**
+
+```scala
+import cats.Monad
+import cats.implicits._
+
+// Определяем алгебру как type class
+trait Console[F[_]] {
+  def printLine(msg: String): F[Unit]
+  def readLine: F[String]
+}
+
+object Console {
+  def apply[F[_]](implicit ev: Console[F]): Console[F] = ev
+  
+  def printLine[F[_]: Console](msg: String): F[Unit] = 
+    Console[F].printLine(msg)
+  
+  def readLine[F[_]: Console]: F[String] = 
+    Console[F].readLine
+}
+
+// Программа параметризована эффектом F
+def program[F[_]: Monad: Console]: F[Unit] = for {
+  _ <- Console.printLine("Enter your name:")
+  name <- Console.readLine
+  _ <- Console.printLine(s"Hello, $name!")
+} yield ()
+```
+
+**Реализации (интерпретаторы):**
+
+```scala
+import cats.effect.IO
+
+// Production интерпретатор
+implicit val ioConsole: Console[IO] = new Console[IO] {
+  def printLine(msg: String): IO[Unit] = 
+    IO(println(msg))
+  
+  def readLine: IO[String] = 
+    IO(scala.io.StdIn.readLine())
+}
+
+// Test интерпретатор
+import cats.data.State
+
+type TestState = (List[String], List[String])
+type TestConsole[A] = State[TestState, A]
+
+implicit val testConsole: Console[TestConsole] = new Console[TestConsole] {
+  def printLine(msg: String): TestConsole[Unit] = 
+    State.modify { case (inputs, outputs) =>
+      (inputs, outputs :+ msg)
+    }
+  
+  def readLine: TestConsole[String] = 
+    State { case (inputs, outputs) =>
+      ((inputs.tail, outputs), inputs.head)
+    }
+}
+
+// Использование
+program[IO].unsafeRunSync()  // Production
+
+val initialState = (List("Alice"), List.empty[String])
+val (finalState, _) = program[TestConsole].run(initialState).value
+```
+
+**Композиция алгебр:**
+
+```scala
+trait KVStore[F[_]] {
+  def get(key: String): F[Option[String]]
+  def put(key: String, value: String): F[Unit]
+}
+
+// Комбинируем несколько алгебр
+def userService[F[_]: Monad: Console: KVStore]: F[Unit] = for {
+  _ <- Console.printLine("Enter username:")
+  username <- Console.readLine
+  _ <- KVStore.put(s"user:$username", username)
+  _ <- Console.printLine("User registered!")
+} yield ()
+```
+
+**Tagless Final vs Free Monad:**
+
+| Свойство | Free Monad | Tagless Final |
+|----------|------------|---------------|
+| Boilerplate | Много | Меньше |
+| Performance | Медленнее | Быстрее |
+| Compose-ability | Сложнее | Проще |
+| Learning curve | Высокая | Средняя |
+| Type inference | Хуже | Лучше |
+
+**Когда использовать Tagless Final:**
+
+1. ✅ Нужна высокая производительность
+2. ✅ Хотите меньше boilerplate
+3. ✅ Не нужна интроспекция program structure
+4. ✅ Composing multiple algebras
+5. ✅ Тестирование с разными интерпретаторами
+
+---
+
 **Практика:**
 
 ```scala
