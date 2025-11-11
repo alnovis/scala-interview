@@ -17,14 +17,14 @@
 **📖 Теоретические материалы:**
 
 1. [Collections (List, Map, Set, Vector, Array, Seq)](#1-collections-list-map-set-vector-array-seq)
-   - List - неизменяемый связный список
-   - Vector - индексированная последовательность
-   - Array - изменяемый массив
-   - Set - уникальные элементы
-   - Map - пары ключ-значение
-   - Seq - абстрактная последовательность
-   - Seq vs List - ключевые отличия
-   - Иерархия коллекций
+   - [List - неизменяемый связный список](#list---неизменяемый-связный-список)
+   - [Vector - индексированная последовательность](#vector---индексированная-последовательность)
+   - [Array - изменяемый массив JVM](#array---изменяемый-массив-jvm)
+   - [Set - неупорядоченная коллекция уникальных элементов](#set---неупорядоченная-коллекция-уникальных-элементов)
+   - [Map - коллекция пар ключ-значение](#map---коллекция-пар-ключ-значение)
+   - [Seq - абстрактная последовательность](#seq---абстрактная-последовательность)
+   - [Seq vs List - ключевые отличия](#seq-vs-list---ключевые-отличия)
+   - [Иерархия коллекций](#иерархия-коллекций)
 
 2. [Immutability vs Mutability](#2-immutability-vs-mutability)
    - Преимущества immutability
@@ -346,7 +346,7 @@
 
 ##### 1. Collections (List, Map, Set, Vector, Array, Seq)
 
-**List - неизменяемый связный список:**
+###### List - неизменяемый связный список
 ```scala
 // Создание
 val list1 = List(1, 2, 3)
@@ -369,7 +369,7 @@ list1 :+ 4        // List(1, 2, 3, 4) - O(n) append
 - Эффективен для итерации с головы
 - Структура данных: односвязный список
 
-**Vector - индексированная неизменяемая последовательность:**
+###### Vector - индексированная неизменяемая последовательность
 ```scala
 val vector = Vector(1, 2, 3, 4, 5)
 
@@ -388,7 +388,7 @@ vector :+ 6       // append - effectively O(1)
 - Структура данных: 32-way tree
 - Хорош для произвольного доступа и апдейтов
 
-**Array - изменяемый массив JVM:**
+###### Array - изменяемый массив JVM
 ```scala
 val arr = Array(1, 2, 3)
 arr(0) = 10       // mutation - O(1)
@@ -404,7 +404,7 @@ val javaArray: Array[String] = Array("a", "b")
 - O(1) доступ и изменение по индексу
 - Фиксированный размер
 
-**Set - неупорядоченная коллекция уникальных элементов:**
+###### Set - неупорядоченная коллекция уникальных элементов
 ```scala
 val set1 = Set(1, 2, 3, 3)  // Set(1, 2, 3)
 set1.contains(2)            // true - O(1) для HashSet
@@ -418,7 +418,7 @@ set1 intersect set2         // Set(3)
 set1 diff set2              // Set(1, 2)
 ```
 
-**Map - коллекция пар ключ-значение:**
+###### Map - коллекция пар ключ-значение
 ```scala
 val map = Map("a" -> 1, "b" -> 2, "c" -> 3)
 val map2 = Map(("a", 1), ("b", 2))  // альтернативный синтаксис
@@ -434,7 +434,7 @@ map - "a"             // удаление
 map.updated("a", 10)  // обновление
 ```
 
-**Seq - абстрактная последовательность:**
+###### Seq - абстрактная последовательность
 ```scala
 // Seq - это trait, не конкретная реализация
 val seq1: Seq[Int] = Seq(1, 2, 3)  // создается List по умолчанию
@@ -471,7 +471,7 @@ Seq
      └── Queue       (FIFO)
 ```
 
-**Seq vs List - ключевые отличия:**
+###### Seq vs List - ключевые отличия
 
 | Аспект | Seq | List |
 |--------|-----|------|
@@ -625,7 +625,7 @@ vector.updated(1000, 42)  // effectively O(1) - обновление
 // - Seq: в API когда не важна реализация
 ```
 
-**Иерархия коллекций:**
+###### Иерархия коллекций
 ```
 Traversable
     ↓
@@ -7717,6 +7717,1254 @@ case class Transaction(userId: String, amount: Double, category: String)
 - Async/Await patterns
 - Actor model (Akka basics)
 - STM (Software Transactional Memory)
+
+---
+
+#### 📖 Теоретические материалы
+
+---
+
+##### 28. Future и Promise
+
+**Определение:**
+
+Future представляет результат асинхронного вычисления, которое может быть еще не завершено. Promise - это writable, single-assignment контейнер, который завершает Future.
+
+###### 28.1. Future - чтение результата асинхронного вычисления
+
+```scala
+import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
+
+// Создание Future
+val future1: Future[Int] = Future {
+  Thread.sleep(1000)
+  42
+}
+
+// Future уже запущен! Вычисление началось немедленно
+println("Future created")  // печатается сразу
+
+// Обработка результата - callback подход
+future1.onComplete {
+  case Success(value) => println(s"Got value: $value")
+  case Failure(exception) => println(s"Failed: ${exception.getMessage}")
+}
+
+// Блокирующее ожидание (не рекомендуется в production!)
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+val result = Await.result(future1, 5.seconds)  // 42
+```
+
+**Характеристики Future:**
+- ✅ Immutable - нельзя изменить после создания
+- ✅ Single-assignment - результат устанавливается один раз
+- ✅ Неблокирующий - не блокирует поток при создании
+- ⚠️ Eager evaluation - вычисление начинается сразу
+
+**Создание Future разными способами:**
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+// 1. Future.apply - запускает асинхронное вычисление
+val future1 = Future {
+  expensiveComputation()
+}
+
+// 2. Future.successful - уже завершенный Future с результатом
+val future2: Future[Int] = Future.successful(42)
+
+// 3. Future.failed - уже завершенный Future с ошибкой
+val future3: Future[Int] = Future.failed(new Exception("Error"))
+
+// 4. Future.fromTry
+import scala.util.Try
+val tryValue: Try[Int] = Try(42)
+val future4: Future[Int] = Future.fromTry(tryValue)
+
+// 5. Из Promise (см. ниже)
+```
+
+**Обработка результата Future:**
+
+```scala
+val future = Future {
+  Thread.sleep(1000)
+  42
+}
+
+// 1. onComplete - callback вызывается при завершении
+future.onComplete {
+  case Success(value) => println(s"Success: $value")
+  case Failure(ex) => println(s"Failure: ${ex.getMessage}")
+}
+
+// 2. foreach - только для успешного результата
+future.foreach { value =>
+  println(s"Got: $value")
+}
+
+// 3. failed - Future[Throwable] для обработки ошибок
+future.failed.foreach { exception =>
+  println(s"Failed with: ${exception.getMessage}")
+}
+
+// 4. Трансформация с map/flatMap (см. раздел композиция)
+val doubled = future.map(_ * 2)  // Future[Int]
+```
+
+---
+
+###### 28.2. Promise - запись результата в Future
+
+**Определение:**
+
+Promise - это writable Future. Вы создаете Promise, получаете из него Future для чтения, и затем завершаете Promise значением или ошибкой.
+
+```scala
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
+
+// Создание Promise
+val promise = Promise[Int]()
+
+// Получение Future из Promise
+val future: Future[Int] = promise.future
+
+// Promise еще не завершен
+println(future.isCompleted)  // false
+
+// Завершение Promise успехом
+promise.success(42)
+// ИЛИ завершение с ошибкой:
+// promise.failure(new Exception("Error"))
+
+// Теперь Future завершен
+println(future.isCompleted)  // true
+
+// Можно читать результат
+future.foreach(value => println(value))  // 42
+
+// ⚠️ Попытка завершить Promise дважды вызовет исключение
+// promise.success(100)  // IllegalStateException!
+
+// Безопасная попытка завершить
+val success = promise.trySuccess(100)  // false (уже завершен)
+```
+
+**Когда использовать Promise:**
+
+```scala
+// 1. Интеграция с callback-based API
+def asyncOperation(callback: Int => Unit): Unit = {
+  // Симуляция асинхронной операции
+  new Thread(() => {
+    Thread.sleep(1000)
+    callback(42)
+  }).start()
+}
+
+def convertToFuture(): Future[Int] = {
+  val promise = Promise[Int]()
+  
+  asyncOperation { result =>
+    promise.success(result)  // Завершаем Promise в callback
+  }
+  
+  promise.future
+}
+
+val future = convertToFuture()
+future.foreach(println)  // 42 (через 1 секунду)
+
+// 2. Ручное управление завершением
+class DataFetcher {
+  private val promise = Promise[String]()
+  val dataFuture: Future[String] = promise.future
+  
+  def startFetching(): Unit = {
+    // Асинхронная загрузка данных
+    Future {
+      Thread.sleep(2000)
+      "Data loaded"
+    }.onComplete {
+      case Success(data) => promise.success(data)
+      case Failure(ex) => promise.failure(ex)
+    }
+  }
+}
+
+val fetcher = new DataFetcher()
+fetcher.startFetching()
+fetcher.dataFuture.foreach(println)  // "Data loaded" (через 2 секунды)
+
+// 3. Координация нескольких асинхронных операций
+def raceCondition[A](future1: Future[A], future2: Future[A]): Future[A] = {
+  val promise = Promise[A]()
+  
+  future1.onComplete(promise.tryComplete)
+  future2.onComplete(promise.tryComplete)
+  
+  promise.future  // Вернет результат того Future, который завершится первым
+}
+
+val slow = Future { Thread.sleep(3000); "slow" }
+val fast = Future { Thread.sleep(1000); "fast" }
+
+raceCondition(slow, fast).foreach(println)  // "fast"
+```
+
+**Promise API:**
+
+```scala
+val promise = Promise[Int]()
+
+// Завершение
+promise.success(42)                    // Успех
+promise.failure(new Exception("err"))  // Ошибка
+promise.complete(Success(42))          // Try[Int]
+promise.complete(Failure(exception))   // Try[Int]
+
+// Безопасное завершение (возвращает Boolean)
+promise.trySuccess(42)                 // true если завершен, false если уже был завершен
+promise.tryFailure(exception)          // аналогично
+promise.tryComplete(tryValue)          // аналогично
+
+// Проверка состояния
+promise.isCompleted                    // Boolean
+
+// Получение Future
+val future: Future[Int] = promise.future
+```
+
+**Future vs Promise - сравнение:**
+
+| Аспект | Future | Promise |
+|--------|--------|---------|
+| **Назначение** | Read-only результат | Write-once контейнер |
+| **Создание** | `Future { code }` | `Promise[T]()` |
+| **Завершение** | Автоматически | Вручную через `success/failure` |
+| **Получение значения** | `onComplete`, `map`, etc. | Через `promise.future` |
+| **Использование** | Композиция вычислений | Интеграция с callback API |
+
+---
+
+##### 29. ExecutionContext
+
+**Определение:**
+
+ExecutionContext - это thread pool, который выполняет асинхронные задачи Future. Он определяет, на каких потоках будут выполняться вычисления.
+
+###### 29.1. Зачем нужен ExecutionContext
+
+```scala
+// Future требует implicit ExecutionContext
+import scala.concurrent.Future
+
+// ❌ Не компилируется без ExecutionContext
+// val future = Future { 42 }
+// Error: Cannot find an implicit ExecutionContext
+
+// ✅ С ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
+val future = Future { 42 }  // OK
+```
+
+**ExecutionContext решает:**
+- На каком потоке выполнить вычисление
+- Сколько потоков использовать
+- Как управлять очередью задач
+- Что делать при перегрузке
+
+---
+
+###### 29.2. Глобальный ExecutionContext
+
+```scala
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+// global - это ForkJoinPool с количеством потоков = количество CPU cores
+val future = Future {
+  println(s"Running on: ${Thread.currentThread().getName}")
+  42
+}
+
+// ⚠️ Проблемы с global:
+// 1. Разделяется всем кодом в приложении
+// 2. Blocking операции блокируют потоки для всех
+// 3. Нет изоляции между компонентами
+```
+
+---
+
+###### 29.3. Создание собственных ExecutionContext
+
+```scala
+import scala.concurrent.{Future, ExecutionContext}
+import java.util.concurrent.Executors
+
+// 1. Fixed thread pool
+val fixedThreadPool = ExecutionContext.fromExecutor(
+  Executors.newFixedThreadPool(10)
+)
+
+implicit val ec1: ExecutionContext = fixedThreadPool
+
+val future1 = Future {
+  println(s"Thread: ${Thread.currentThread().getName}")
+  "Result"
+}(ec1)  // Явное указание ExecutionContext
+
+// 2. Cached thread pool (создает новые потоки по необходимости)
+val cachedThreadPool = ExecutionContext.fromExecutor(
+  Executors.newCachedThreadPool()
+)
+
+// 3. Single thread executor
+val singleThread = ExecutionContext.fromExecutor(
+  Executors.newSingleThreadExecutor()
+)
+
+// 4. Custom thread pool с настройками
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.LinkedBlockingQueue
+
+val customPool = new ThreadPoolExecutor(
+  5,                           // corePoolSize
+  10,                          // maximumPoolSize
+  60L,                         // keepAliveTime
+  TimeUnit.SECONDS,            // unit
+  new LinkedBlockingQueue[Runnable](100)  // workQueue
+)
+
+val customEc = ExecutionContext.fromExecutor(customPool)
+```
+
+---
+
+###### 29.4. Специализированные ExecutionContext
+
+```scala
+// Для blocking операций - отдельный thread pool!
+object Contexts {
+  // Для CPU-bound задач
+  implicit val cpuBound: ExecutionContext = 
+    ExecutionContext.fromExecutor(
+      Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors())
+    )
+  
+  // Для IO-bound и blocking операций
+  val blockingIo: ExecutionContext = 
+    ExecutionContext.fromExecutor(
+      Executors.newCachedThreadPool()  // Может создавать много потоков
+    )
+}
+
+// Использование
+import Contexts._
+
+// CPU-bound задача - используем cpuBound (implicit)
+val computation = Future {
+  // Сложные вычисления
+  (1 to 1000000).sum
+}
+
+// Blocking IO - явно используем blockingIo
+val dbQuery = Future {
+  // Blocking database call
+  Thread.sleep(5000)
+  "Result from DB"
+}(blockingIo)  // Явно указываем ExecutionContext
+```
+
+---
+
+###### 29.5. Blocking в ExecutionContext
+
+**Проблема:**
+
+```scala
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+// ❌ ПЛОХО - блокирует поток из global pool
+val future = Future {
+  Thread.sleep(10000)  // Blocking operation!
+  "result"
+}
+
+// Если все потоки заблокированы, новые Future не могут выполняться!
+// Это может привести к deadlock
+```
+
+**Решение 1: Отдельный ExecutionContext для blocking:**
+
+```scala
+import scala.concurrent.{Future, ExecutionContext, blocking}
+import java.util.concurrent.Executors
+
+// Отдельный pool для blocking операций
+val blockingEc = ExecutionContext.fromExecutor(
+  Executors.newCachedThreadPool()
+)
+
+// Используем blocking EC для blocking операций
+val future = Future {
+  Thread.sleep(10000)
+  "result"
+}(blockingEc)
+```
+
+**Решение 2: blocking { } - уведомление ExecutionContext:**
+
+```scala
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, blocking}
+
+val future = Future {
+  blocking {
+    // ExecutionContext знает, что это blocking операция
+    // и может добавить дополнительные потоки
+    Thread.sleep(10000)
+  }
+  "result"
+}
+```
+
+---
+
+###### 29.6. Best Practices для ExecutionContext
+
+```scala
+// ✅ ХОРОШО: Разные ExecutionContext для разных типов задач
+object ExecutionContexts {
+  // Для быстрых CPU-bound операций
+  implicit val default: ExecutionContext = 
+    ExecutionContext.fromExecutor(
+      Executors.newFixedThreadPool(
+        Runtime.getRuntime.availableProcessors()
+      )
+    )
+  
+  // Для blocking IO
+  val io: ExecutionContext = 
+    ExecutionContext.fromExecutor(
+      Executors.newCachedThreadPool()
+    )
+  
+  // Для database операций
+  val database: ExecutionContext = 
+    ExecutionContext.fromExecutor(
+      Executors.newFixedThreadPool(20)  // Размер connection pool
+    )
+}
+
+// Использование
+def fetchFromDb(id: Long): Future[User] = Future {
+  // Database call
+  queryDb(id)
+}(ExecutionContexts.database)  // Явно указываем DB context
+
+def computeExpensive(data: Data): Future[Result] = Future {
+  // CPU-intensive computation
+  process(data)
+}  // Использует default (implicit)
+
+// ✅ ХОРОШО: Закрытие ExecutionContext при завершении
+val ec = ExecutionContext.fromExecutor(
+  Executors.newFixedThreadPool(10)
+)
+
+// При shutdown приложения
+ec match {
+  case executor: ExecutionContextExecutor =>
+    executor.shutdown()
+    executor.awaitTermination(60, TimeUnit.SECONDS)
+}
+
+// ❌ ПЛОХО: Создание нового ExecutionContext для каждого Future
+def badExample(): Future[String] = {
+  val ec = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
+  Future {
+    "result"
+  }(ec)
+}
+// Создает новый thread pool при каждом вызове!
+
+// ✅ ХОРОШО: Переиспользование ExecutionContext
+object Config {
+  val ec: ExecutionContext = ExecutionContext.fromExecutor(
+    Executors.newFixedThreadPool(10)
+  )
+}
+
+def goodExample(): Future[String] = {
+  Future {
+    "result"
+  }(Config.ec)
+}
+```
+
+---
+
+##### 30. Future Composition (Композиция Future)
+
+**Определение:**
+
+Future composition - это способы комбинирования нескольких Future в более сложные асинхронные вычисления.
+
+###### 30.1. map - трансформация результата
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val future: Future[Int] = Future { 42 }
+
+// map трансформирует значение внутри Future
+val doubled: Future[Int] = future.map(_ * 2)  // Future[Int] = 84
+val asString: Future[String] = future.map(_.toString)  // Future[String] = "42"
+
+// Цепочка map
+val result: Future[String] = Future { 10 }
+  .map(_ * 2)           // Future[Int] = 20
+  .map(_ + 5)           // Future[Int] = 25
+  .map(_.toString)      // Future[String] = "25"
+
+result.foreach(println)  // "25"
+```
+
+---
+
+###### 30.2. flatMap - последовательные асинхронные операции
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def getUser(id: Long): Future[User] = Future {
+  Thread.sleep(100)
+  User(id, "Alice")
+}
+
+def getOrders(userId: Long): Future[List[Order]] = Future {
+  Thread.sleep(100)
+  List(Order(1, userId, 100.0), Order(2, userId, 200.0))
+}
+
+// map создает Future[Future[List[Order]]]
+val nested: Future[Future[List[Order]]] = getUser(1).map { user =>
+  getOrders(user.id)
+}
+
+// flatMap "уплощает" вложенные Future
+val orders: Future[List[Order]] = getUser(1).flatMap { user =>
+  getOrders(user.id)
+}
+
+// Цепочка flatMap
+val total: Future[Double] = 
+  getUser(1).flatMap { user =>
+    getOrders(user.id).map { orders =>
+      orders.map(_.amount).sum
+    }
+  }
+
+total.foreach(println)  // 300.0
+```
+
+---
+
+###### 30.3. for-comprehension для Future
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def getUser(id: Long): Future[User] = ???
+def getOrders(userId: Long): Future[List[Order]] = ???
+def calculateTotal(orders: List[Order]): Future[Double] = ???
+
+// Вместо вложенных flatMap
+val result1: Future[Double] = 
+  getUser(1).flatMap { user =>
+    getOrders(user.id).flatMap { orders =>
+      calculateTotal(orders)
+    }
+  }
+
+// Используем for-comprehension (синтаксический сахар)
+val result2: Future[Double] = for {
+  user <- getUser(1)
+  orders <- getOrders(user.id)
+  total <- calculateTotal(orders)
+} yield total
+
+// ⚠️ ВАЖНО: операции выполняются последовательно!
+// getOrders ждет завершения getUser
+// calculateTotal ждет завершения getOrders
+```
+
+---
+
+###### 30.4. Параллельное выполнение Future
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+// ❌ Последовательное выполнение (медленно)
+val sequential: Future[(String, String, String)] = for {
+  result1 <- Future { Thread.sleep(1000); "A" }
+  result2 <- Future { Thread.sleep(1000); "B" }
+  result3 <- Future { Thread.sleep(1000); "C" }
+} yield (result1, result2, result3)
+// Займет 3 секунды
+
+// ✅ Параллельное выполнение (быстро)
+val future1 = Future { Thread.sleep(1000); "A" }
+val future2 = Future { Thread.sleep(1000); "B" }
+val future3 = Future { Thread.sleep(1000); "C" }
+
+val parallel: Future[(String, String, String)] = for {
+  result1 <- future1
+  result2 <- future2
+  result3 <- future3
+} yield (result1, result2, result3)
+// Займет 1 секунду (параллельно)!
+
+// Объяснение:
+// Future запускается немедленно при создании (eager)
+// future1, future2, future3 начинают выполняться сразу
+// for-comprehension только ждет их результаты
+```
+
+---
+
+###### 30.5. Future.sequence - List[Future] → Future[List]
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def fetchUrl(url: String): Future[String] = Future {
+  Thread.sleep(1000)
+  s"Content of $url"
+}
+
+val urls = List(
+  "http://example.com/1",
+  "http://example.com/2",
+  "http://example.com/3"
+)
+
+// Создаем List[Future[String]]
+val futures: List[Future[String]] = urls.map(fetchUrl)
+
+// sequence превращает в Future[List[String]]
+val allResults: Future[List[String]] = Future.sequence(futures)
+
+allResults.foreach { results =>
+  results.foreach(println)
+}
+
+// ⚠️ ВАЖНО: sequence ждет завершения ВСЕХ Future
+// Если хотя бы один Future упадет с ошибкой, весь результат будет Failure
+```
+
+---
+
+###### 30.6. Future.traverse - комбинация map + sequence
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def fetchUrl(url: String): Future[String] = ???
+
+val urls = List("url1", "url2", "url3")
+
+// Вместо map + sequence
+val results1 = Future.sequence(urls.map(fetchUrl))
+
+// Используем traverse (эффективнее)
+val results2 = Future.traverse(urls)(fetchUrl)
+
+// traverse = map + sequence в одной операции
+// Future.traverse(urls)(fetchUrl) ≡ Future.sequence(urls.map(fetchUrl))
+```
+
+---
+
+###### 30.7. Future.foldLeft и Future.reduceLeft
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val futures = List(
+  Future(1),
+  Future(2),
+  Future(3),
+  Future(4)
+)
+
+// foldLeft - последовательная обработка с аккумулятором
+val sum: Future[Int] = Future.foldLeft(futures)(0)(_ + _)
+sum.foreach(println)  // 10
+
+// Практический пример - последовательные операции
+def updateRecord(id: Int): Future[Unit] = Future {
+  println(s"Updating record $id")
+  Thread.sleep(500)
+}
+
+val recordIds = List(1, 2, 3, 4, 5)
+
+// Обновляем записи последовательно (не перегружаем базу)
+val updates: Future[Unit] = Future.foldLeft(recordIds)(()) { (_, id) =>
+  updateRecord(id).map(_ => ())
+}
+```
+
+---
+
+###### 30.8. zip и zipWith - комбинирование двух Future
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val future1: Future[Int] = Future { 42 }
+val future2: Future[String] = Future { "hello" }
+
+// zip - комбинирует в кортеж
+val zipped: Future[(Int, String)] = future1.zip(future2)
+zipped.foreach { case (num, str) =>
+  println(s"$num and $str")  // "42 and hello"
+}
+
+// zipWith - комбинирует с функцией
+val combined: Future[String] = future1.zipWith(future2) { (num, str) =>
+  s"$str $num"
+}
+combined.foreach(println)  // "hello 42"
+```
+
+---
+
+###### 30.9. Композиция с andThen
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
+
+val future = Future { 42 }
+
+// andThen - для side effects (логирование, метрики)
+future
+  .andThen { case Success(v) => println(s"Got value: $v") }
+  .andThen { case Failure(e) => println(s"Failed: $e") }
+  .map(_ * 2)
+  .andThen { case Success(v) => println(s"After doubling: $v") }
+
+// andThen НЕ трансформирует результат
+// Он только выполняет side effect и возвращает тот же Future
+```
+
+---
+
+##### 31. Error Handling в Future
+
+**Проблема:**
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val future: Future[Int] = Future {
+  throw new Exception("Something went wrong!")
+  42
+}
+
+// Ошибка не бросается сразу!
+// Future захватывает exception
+
+future.onComplete {
+  case Success(value) => println(value)
+  case Failure(exception) => println(s"Error: ${exception.getMessage}")
+}
+// Напечатает: "Error: Something went wrong!"
+```
+
+---
+
+###### 31.1. recover - обработка ошибки с fallback значением
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def divide(a: Int, b: Int): Future[Int] = Future {
+  if (b == 0) throw new ArithmeticException("Division by zero")
+  a / b
+}
+
+// recover - возвращает значение при ошибке
+val result: Future[Int] = divide(10, 0).recover {
+  case _: ArithmeticException => 0  // Возвращаем 0 при делении на ноль
+}
+
+result.foreach(println)  // 0
+
+// Более сложный пример
+val userData: Future[User] = fetchUser(userId).recover {
+  case _: NotFoundException => User.anonymous  // Default user
+  case _: TimeoutException => User.cached      // Cached user
+  case other => throw other  // Пробрасываем другие ошибки дальше
+}
+```
+
+---
+
+###### 31.2. recoverWith - обработка ошибки с альтернативным Future
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+def fetchFromPrimary(): Future[String] = Future {
+  throw new Exception("Primary failed!")
+}
+
+def fetchFromBackup(): Future[String] = Future {
+  "Data from backup"
+}
+
+// recoverWith - запускает альтернативный Future при ошибке
+val result: Future[String] = fetchFromPrimary().recoverWith {
+  case _: Exception => fetchFromBackup()
+}
+
+result.foreach(println)  // "Data from backup"
+
+// Цепочка fallback'ов
+def fetchWithFallbacks(): Future[String] = 
+  fetchFromPrimary()
+    .recoverWith { case _ => fetchFromBackup() }
+    .recoverWith { case _ => fetchFromCache() }
+    .recover { case _ => "Default value" }
+```
+
+---
+
+###### 31.3. fallbackTo - альтернативный Future
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val primary = Future {
+  throw new Exception("Failed!")
+}
+
+val backup = Future {
+  "Backup result"
+}
+
+// fallbackTo - использует backup если primary упал
+val result: Future[String] = primary.fallbackTo(backup)
+
+result.foreach(println)  // "Backup result"
+
+// ⚠️ ВАЖНО: backup Future запускается немедленно (параллельно)!
+// Это отличается от recoverWith, где backup запускается только при ошибке
+```
+
+---
+
+###### 31.4. transform и transformWith - универсальная трансформация
+
+```scala
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Try, Success, Failure}
+
+val future = Future { 42 / 0 }
+
+// transform - трансформация Try[A] => Try[B]
+val transformed: Future[String] = future.transform {
+  case Success(value) => Success(s"Result: $value")
+  case Failure(exception) => Success(s"Error: ${exception.getMessage}")
+}
+
+transformed.foreach(println)  // "Error: / by zero"
+
+// transformWith - трансформация Try[A] => Future[B]
+val transformedWith: Future[String] = future.transformWith {
+  case Success(value) => Future.successful(s"Result: $value")
+  case Failure(exception) => Future {
+    // Логирование в базу
+    logError(exception)
+    s"Error: ${exception.getMessage}"
+  }
+}
+```
+
+---
+
+###### 31.5. Паттерн Retry
+
+```scala
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
+
+def retry[A](f: => Future[A], retries: Int): Future[A] = {
+  f.recoverWith {
+    case exception if retries > 0 =>
+      println(s"Failed, retrying... ($retries retries left)")
+      retry(f, retries - 1)
+    case exception =>
+      Future.failed(exception)
+  }
+}
+
+// Использование
+def unreliableOperation(): Future[String] = Future {
+  if (scala.util.Random.nextBoolean()) 
+    throw new Exception("Random failure")
+  "Success!"
+}
+
+val result = retry(unreliableOperation(), 3)
+
+result.onComplete {
+  case Success(value) => println(s"Finally succeeded: $value")
+  case Failure(exception) => println(s"Failed after retries: ${exception.getMessage}")
+}
+```
+
+---
+
+###### 31.6. Паттерн Timeout
+
+```scala
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import java.util.concurrent.TimeoutException
+
+def withTimeout[A](future: Future[A], timeout: Duration): Future[A] = {
+  val promise = Promise[A]()
+  
+  // Таймер для timeout
+  val timer = new java.util.Timer()
+  timer.schedule(
+    new java.util.TimerTask {
+      def run(): Unit = {
+        promise.tryFailure(new TimeoutException(s"Timeout after $timeout"))
+        timer.cancel()
+      }
+    },
+    timeout.toMillis
+  )
+  
+  // Гонка между future и timeout
+  future.onComplete { result =>
+    promise.tryComplete(result)
+    timer.cancel()
+  }
+  
+  promise.future
+}
+
+// Использование
+val slowOperation = Future {
+  Thread.sleep(5000)
+  "Done"
+}
+
+val result = withTimeout(slowOperation, 2.seconds)
+
+result.onComplete {
+  case Success(value) => println(s"Completed: $value")
+  case Failure(_: TimeoutException) => println("Timed out!")
+  case Failure(ex) => println(s"Failed: ${ex.getMessage}")
+}
+```
+
+---
+
+##### 32. Actor Model Basics (Akka)
+
+**Определение:**
+
+Actor Model - это модель конкурентности, где actors (акторы) - это примитивы вычислений, которые:
+- Обрабатывают сообщения последовательно (one message at a time)
+- Имеют собственное изолированное состояние
+- Взаимодействуют только через асинхронные сообщения
+- Не разделяют память (no shared mutable state)
+
+###### 32.1. Базовый Actor
+
+```scala
+import akka.actor.{Actor, ActorSystem, Props}
+
+// 1. Определяем сообщения
+case class Greeting(message: String)
+case class Goodbye(message: String)
+
+// 2. Создаем Actor
+class GreeterActor extends Actor {
+  def receive: Receive = {
+    case Greeting(message) =>
+      println(s"Received greeting: $message")
+      sender() ! "Hello back!"  // Отправка ответа
+    
+    case Goodbye(message) =>
+      println(s"Goodbye: $message")
+      context.stop(self)  // Остановка актора
+    
+    case _ =>
+      println("Unknown message")
+  }
+}
+
+// 3. Создание ActorSystem и Actor
+val system = ActorSystem("MySystem")
+val greeter = system.actorOf(Props[GreeterActor], "greeter")
+
+// 4. Отправка сообщений
+greeter ! Greeting("Hi there!")  // Fire-and-forget (!)
+greeter ! Goodbye("See you!")
+
+// 5. Shutdown
+system.terminate()
+```
+
+**Ключевые концепции:**
+
+- `!` (tell) - fire-and-forget, асинхронная отправка без ожидания ответа
+- `sender()` - ссылка на отправителя сообщения
+- `context.stop(self)` - остановка актора
+- `receive` - partial function для обработки сообщений
+
+---
+
+###### 32.2. Actor с состоянием
+
+```scala
+import akka.actor.{Actor, Props}
+
+// Сообщения
+case class Deposit(amount: Double)
+case class Withdraw(amount: Double)
+case object GetBalance
+
+// Actor с mutable состоянием (изолированным!)
+class BankAccountActor extends Actor {
+  private var balance: Double = 0.0  // Mutable, но изолировано в акторе
+  
+  def receive: Receive = {
+    case Deposit(amount) =>
+      balance += amount
+      println(s"Deposited $amount, new balance: $balance")
+      sender() ! balance
+    
+    case Withdraw(amount) =>
+      if (amount <= balance) {
+        balance -= amount
+        sender() ! Some(balance)
+      } else {
+        sender() ! None
+      }
+    
+    case GetBalance =>
+      sender() ! balance
+  }
+}
+
+// Использование
+val account = system.actorOf(Props[BankAccountActor], "account")
+
+account ! Deposit(100.0)
+account ! Withdraw(30.0)
+account ! GetBalance
+```
+
+---
+
+###### 32.3. Ask Pattern (?) - запрос с ответом
+
+```scala
+import akka.actor.{Actor, ActorSystem, Props}
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
+import scala.concurrent.Future
+
+class CalculatorActor extends Actor {
+  def receive: Receive = {
+    case ("add", a: Int, b: Int) => sender() ! (a + b)
+    case ("multiply", a: Int, b: Int) => sender() ! (a * b)
+  }
+}
+
+val system = ActorSystem("MySystem")
+val calculator = system.actorOf(Props[CalculatorActor], "calculator")
+
+// Ask pattern требует implicit Timeout
+implicit val timeout: Timeout = Timeout(5.seconds)
+import system.dispatcher  // ExecutionContext
+
+// ? возвращает Future
+val resultFuture: Future[Any] = calculator ? ("add", 10, 20)
+
+// Приведение типа
+val result: Future[Int] = resultFuture.mapTo[Int]
+
+result.foreach(println)  // 30
+
+// ⚠️ Ask pattern менее эффективен чем tell (!)
+// Используйте только когда действительно нужен ответ
+```
+
+---
+
+###### 32.4. Actor Lifecycle
+
+```scala
+import akka.actor.{Actor, Props}
+
+class LifecycleActor extends Actor {
+  
+  // Вызывается при старте актора
+  override def preStart(): Unit = {
+    println("Actor starting")
+    // Инициализация ресурсов
+  }
+  
+  // Вызывается после остановки актора
+  override def postStop(): Unit = {
+    println("Actor stopped")
+    // Освобождение ресурсов
+  }
+  
+  // Вызывается перед рестартом
+  override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
+    println(s"Actor restarting due to: ${reason.getMessage}")
+    super.preRestart(reason, message)
+  }
+  
+  // Вызывается после рестарта
+  override def postRestart(reason: Throwable): Unit = {
+    println("Actor restarted")
+    super.postRestart(reason)
+  }
+  
+  def receive: Receive = {
+    case "crash" => throw new Exception("Intentional crash")
+    case msg => println(s"Received: $msg")
+  }
+}
+```
+
+---
+
+###### 32.5. Supervision (Надзор)
+
+**Стратегии надзора:**
+
+```scala
+import akka.actor.{Actor, Props, OneForOneStrategy, SupervisorStrategy}
+import akka.actor.SupervisorStrategy._
+import scala.concurrent.duration._
+
+class Supervisor extends Actor {
+  
+  // Стратегия надзора
+  override val supervisorStrategy: SupervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = 1.minute) {
+      case _: ArithmeticException => Resume        // Продолжить
+      case _: NullPointerException => Restart      // Перезапустить
+      case _: IllegalArgumentException => Stop     // Остановить
+      case _: Exception => Escalate                // Передать выше
+    }
+  
+  def receive: Receive = {
+    case props: Props => sender() ! context.actorOf(props)
+  }
+}
+
+class WorkerActor extends Actor {
+  def receive: Receive = {
+    case "crash" => throw new Exception("Crash!")
+    case msg => println(s"Processing: $msg")
+  }
+}
+
+// Создание иерархии
+val supervisor = system.actorOf(Props[Supervisor], "supervisor")
+val worker = system.actorOf(Props[WorkerActor], "worker")
+
+worker ! "crash"  // Actor будет перезапущен supervisor'ом
+```
+
+**Стратегии:**
+- **Resume** - продолжить с текущим состоянием
+- **Restart** - перезапустить актор (состояние сбрасывается)
+- **Stop** - остановить актор
+- **Escalate** - передать ошибку родительскому актору
+
+---
+
+###### 32.6. Actor vs Future - когда что использовать
+
+**Future:**
+```scala
+// ✅ Используйте Future для:
+// - Одноразовых асинхронных вычислений
+// - Простой композиции операций
+// - Когда не нужно состояние
+val result = for {
+  user <- fetchUser(id)
+  orders <- fetchOrders(user.id)
+} yield orders
+```
+
+**Actor:**
+```scala
+// ✅ Используйте Actor для:
+// - Управления mutable состоянием
+// - Длительно живущих сущностей
+// - Сложной координации между компонентами
+// - Когда нужны lifecycle hooks и supervision
+class UserSessionActor extends Actor {
+  private var state: SessionState = ???
+  // Обработка сообщений с изменением состояния
+}
+```
+
+**Сравнение:**
+
+| Аспект | Future | Actor |
+|--------|--------|-------|
+| **Lifecycle** | Одноразовый | Долгоживущий |
+| **Состояние** | Нет | Да (изолированное) |
+| **Композиция** | map, flatMap, for | Иерархии, supervision |
+| **Ошибки** | recover, fallbackTo | Supervision strategies |
+| **Использование** | Async вычисления | Stateful entities |
+
+---
 
 **Практика:**
 
